@@ -64,6 +64,8 @@ namespace game {
 		GLsizei GetSize(void) const;
 		GLuint GetMaterial(void) const;
 
+		void SetHit(float dmg);
+
 
 		glm::quat GetAngM(void) const;
 		void SetAngM(glm::quat angm);
@@ -86,6 +88,8 @@ namespace game {
 		glm::vec3 scale_; // Scale of node
 		glm::vec3 forward;
 		bool visible_;
+		bool hit;
+		float hitDmg;
 		glm::quat angm_;
 		/*
 			[0] - [3] Top Four Vertices

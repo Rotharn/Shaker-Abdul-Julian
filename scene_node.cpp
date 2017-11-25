@@ -16,6 +16,7 @@ namespace game {
 SceneNode::SceneNode(const std::string name, const Resource *geometry, const Resource *material){
 
 	visible_ = true;
+	hit = false;
     // Set name of scene node
     name_ = name;
 
@@ -64,6 +65,10 @@ const std::string SceneNode::GetName(void) const {
     return name_;
 }
 
+void SceneNode::SetHit(float dmg) {
+	this->hit = true;
+	this->hitDmg = dmg;
+}
 
 glm::vec3 SceneNode::GetPosition(void) const {
 

@@ -160,6 +160,7 @@ void Game::SetupScene(void){
 	root->AddChild(cameraNode);
 	SetupHelicopterOld();
 	SetupWorld();
+	SetupEnemies();
 	positions = std::deque<glm::vec3>(25,heli->GetPosition());
 	SetupHostage("Hostage 1");
 	SetupHostage("Hostage 2");
@@ -834,6 +835,10 @@ void Game::SetupWorld() {
 		vertices[5] = b->GetPosition() + bot + front + left;
 		vertices[6] = b->GetPosition() + bot + back + right;
 		vertices[7] = b->GetPosition() + bot + back + left;
+
+		for (int roofCorners = 0; roofCorners < 4; roofCorners++)
+			spawnPoints.push_back(vertices[roofCorners]);
+
 		b->SetBoundingBox(vertices);
 		if (i < 60)
 			for (int a = 0; a < 8; a++) {
@@ -858,6 +863,47 @@ void Game::SetupWorld() {
 	delete(table);
 
 
+
+}
+
+void Game::SetupEnemies() {
+	float enemies = 30;
+	while (enemies > spawnPoints.size())
+		enemies = enemies / 2;
+	
+	for (int i = 0; i < enemies; i++) {
+		int location = rand() % spawnPoints.size();
+
+		std::stringstream ss;
+		ss << i;
+		std::string index = ss.str();
+		std::string name = "StationaryEnemy" + index;
+
+		Enemy* bad_dude = CreateEnemyInstance(name, "CylinderMesh", "ObjectMaterial");
+
+		bad_dude->SetPosition(spawnPoints.at(location));
+		bad_dude->SetScale(glm::vec3(3.0, 3.0, 3.0));
+		spawnPoints.erase(spawnPoints.begin() + location);
+		scene_.GetNode("Root")->AddChild(bad_dude);
+	}
+
+
+}
+
+Enemy* Game::CreateEnemyInstance(std::string entity_name, std::string object_name, std::string material_name) {
+
+	// Get resources
+	Resource *geom = resman_.GetResource(object_name);
+	if (!geom) {
+		throw(GameException(std::string("Could not find resource \"") + object_name + std::string("\"")));
+	}
+
+	Resource *mat = resman_.GetResource(material_name);
+	if (!mat) {
+		throw(GameException(std::string("Could not find resource \"") + material_name + std::string("\"")));
+	}
+
+	return new Enemy(entity_name, geom, mat, (SceneNode*)heli, &resman_);
 
 }
 

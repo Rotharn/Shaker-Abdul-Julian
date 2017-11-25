@@ -11,6 +11,7 @@
 #include "resource_manager.h"
 #include "camera.h"
 #include "asteroid.h"
+#include "Enemy.h"
 
 #include <deque>
 
@@ -54,6 +55,7 @@ namespace game {
 			void SetupHelicopter();
 			void SetupHelicopterOld();
 			void SetupWorld();
+			void SetupEnemies();
 			void SetupHostage(std::string name);
 
         protected:
@@ -83,6 +85,8 @@ namespace game {
 			std::deque<SceneNode*> childlasers;
 			std::vector<bool> hostcollected;
 			std::vector<SceneNode *> collidables;
+			std::vector<Enemy*> enemies;
+			std::vector<glm::vec3> spawnPoints;
 
 			bool input_up, input_down, input_left, input_right, input_s, input_x, input_a, input_z, input_e, input_q,
 				 input_j, input_l, input_i, input_k, input_c, input_m, input_t, input_w, input_d, input_b, input_space, input_shift,
@@ -116,6 +120,7 @@ namespace game {
             // Asteroid field
             // Create instance of one asteroid
             Asteroid *CreateAsteroidInstance(std::string entity_name, std::string object_name, std::string material_name);
+			Enemy* CreateEnemyInstance(std::string entity_name, std::string object_namee, std::string material_name);
             // Create entire random asteroid field
             void CreateAsteroidField(int num_asteroids = 200);
 			void CreateLaserInstance(std::string entity_name, std::string object_name, std::string material_name);

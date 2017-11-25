@@ -2,7 +2,7 @@
 
 
 namespace game{
-	Enemy::Enemy(const std::string name, const Resource *geometry, const Resource *material, Helicopter* player, ResourceManager* resman) : SceneNode ( name, geometry, material) {
+	Enemy::Enemy(const std::string name, const Resource *geometry, const Resource *material, SceneNode* player, ResourceManager* resman) : SceneNode ( name, geometry, material) {
 		
 		
 		this->type = STATIONARY;
@@ -12,6 +12,7 @@ namespace game{
 		this->time = glfwGetTime();
 		this->player = player;
 		this->enemyResMan = resman;
+		//this->SetScale(glm::vec3(0.01, 0.01, 0.01));
 	}
 
 	Enemy::~Enemy() {
@@ -23,7 +24,7 @@ namespace game{
 		float dtime = time - glfwGetTime();
 		dtime += (2.0 + (float) (rand() % 5)) / 10.0f;
 		if (type == STATIONARY) {
-			SetOrientation(glm::angleAxis(glm::dot(this->position_, player->GetPosition()), glm::cross(this->position_, player->GetPosition())));
+			//SetOrientation(glm::angleAxis(glm::dot(this->position_, player->GetPosition()), glm::cross(this->position_, player->GetPosition())));
 			if (dtime > 2.0) {
 				time = glfwGetTime();
 				Shoot();
@@ -72,7 +73,7 @@ namespace game{
 			it != children_end(); it++) {
 				SceneNode* current = *it;
 				if (glm::length((current->GetPosition() - player->GetPosition())) < 2.0)
-					player->Hit(this->damage);
+					player->SetHit(this->damage);
 			}
 		}
 	}

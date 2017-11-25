@@ -84,6 +84,10 @@ namespace game {
 	void Helicopter::Update() {
 		float dtime = glfwGetTime() - time;
 		time = glfwGetTime();
+		if (this->hit) {
+			this->hit = false;
+			Hit(hitDmg);
+		}
 		if ((time - wasHit) > 3.0) {
 			if (visible_)
 				this->SetVisible(false);
