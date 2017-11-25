@@ -41,6 +41,7 @@ namespace game {
 		void SetScale(glm::vec3 scale);
 		void SetMaterial(GLuint material);
 		void SetForward(glm::vec3 forward_);
+		void SetBoundingBox(glm::vec3* box);
 
 		// Perform transformations on node
 		void Translate(glm::vec3 trans);
@@ -68,7 +69,7 @@ namespace game {
 		void SetAngM(glm::quat angm);
 
 		// Hierarchy-related methods
-		void AddChild(SceneNode *node);
+		void AddChild(SceneNode *node); 
 		std::vector<SceneNode *>::const_iterator children_begin() const;
 		std::vector<SceneNode *>::const_iterator children_end() const;
 
@@ -86,7 +87,14 @@ namespace game {
 		glm::vec3 forward;
 		bool visible_;
 		glm::quat angm_;
-
+		/*
+			[0] - [3] Top Four Vertices
+			[4] - [7] Bottom Four Vertices
+			Order: 0 -> 1 -> 2 -> 3 
+				   4 -> 5 -> 6 -> 7
+			With 4 directly below 0 and so on.
+		*/
+		glm::vec3* boundingBox;
 						  // Hierarchy
 		SceneNode *parent_;
 		std::vector<SceneNode *> children_;

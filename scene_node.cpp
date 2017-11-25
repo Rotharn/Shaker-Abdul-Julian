@@ -108,6 +108,10 @@ void SceneNode::SetScale(glm::vec3 scale){
     scale_ = scale;
 }
 
+void SceneNode::SetBoundingBox(glm::vec3* box) {
+	boundingBox = box;
+}
+
 void SceneNode::SetForward(glm::vec3 forward_) {
 	forward = forward_;
 }

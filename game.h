@@ -52,6 +52,7 @@ namespace game {
 			void PrintVec3(glm::vec3);
 
 			void SetupHelicopter();
+			void SetupHelicopterOld();
 			void SetupWorld();
 			void SetupHostage(std::string name);
 
@@ -84,11 +85,12 @@ namespace game {
 			std::vector<SceneNode *> collidables;
 
 			bool input_up, input_down, input_left, input_right, input_s, input_x, input_a, input_z,
-				input_j, input_l, input_i, input_k, input_c, input_m, input_t, input_w, input_d, input_b;
+				 input_j, input_l, input_i, input_k, input_c, input_m, input_t, input_w, input_d, input_b,
+				 input_m1, input_m2, input_m3;
 			float offsetx, offsety;
 
 			// Scene graph containing all nodes to render
-			SceneNode* heli;
+			Helicopter* heli;
 			SceneNode* body2;
 			SceneNode* tail;
 			SceneNode* rotor1;
@@ -107,6 +109,8 @@ namespace game {
  
             // Methods to handle events
             static void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+			static void MouseButtonCallback(GLFWwindow* window, int key, int action, int mods);
+			static void ScrollWheelCallback(GLFWwindow* window, double xoffset, double yoffset);
             static void ResizeCallback(GLFWwindow* window, int width, int height);
 
             // Asteroid field
@@ -117,6 +121,7 @@ namespace game {
 			void CreateLaserInstance(std::string entity_name, std::string object_name, std::string material_name);
 			SceneNode *CreateInstance(std::string entity_name, std::string object_name, std::string material_name);
 			SceneNode *CreateInstance(std::string entity_name, std::string object_name, std::string material_name, std::string parent_name);
+			Helicopter* CreateHeliInstance(std::string entity_name, std::string object_name, std::string material_name, std::string parent_name);
 
     }; // class Game
 

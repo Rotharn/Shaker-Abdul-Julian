@@ -9,14 +9,12 @@
 #define GLM_FORCE_RADIANS
 #include <glm/gtc/quaternion.hpp>
 
-#include "resource.h"
-#include "camera.h"
 
 
 namespace game {
 	class Helicopter : public SceneNode {
 	public:
-		Helicopter();
+		Helicopter(const std::string name, const Resource *geometry, const Resource *material);
 		Helicopter(SceneNode*);
 		~Helicopter();
 

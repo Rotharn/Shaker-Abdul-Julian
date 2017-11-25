@@ -103,6 +103,8 @@ void Game::InitEventHandlers(void){
 
     // Set event callbacks
     glfwSetKeyCallback(window_, KeyCallback);
+	glfwSetMouseButtonCallback(window_, MouseButtonCallback);
+	glfwSetScrollCallback(window_, ScrollWheelCallback);
     glfwSetFramebufferSizeCallback(window_, ResizeCallback);
 
     // Set pointer to game object, so that callbacks can access it
@@ -145,7 +147,8 @@ void Game::SetupResources(void){
 
 
 void Game::SetupScene(void){
-
+	
+	input_b = false;
 	offsetx = 20.0f;
 	offsety = 2.0f;
     // Set background color for the scene
@@ -155,7 +158,7 @@ void Game::SetupScene(void){
 	root->SetPosition(glm::vec3(0.0, 0.0, 0.0));
 	scene_.SetRoot(root);
 	root->AddChild(cameraNode);
-	SetupHelicopter();
+	SetupHelicopterOld();
 	SetupWorld();
 	positions = std::deque<glm::vec3>(25,heli->GetPosition());
 	SetupHostage("Hostage 1");
@@ -224,7 +227,7 @@ void Game::Update(GLFWwindow* window) {
 	float trans_factor = 1.0;
 
 	//game->test->Scale(glm::vec3(1.01, 1.01, 1.01));
-	PrintVec3(game->test->GetScale());
+	//PrintVec3(game->test->GetScale());
 
 	if (game->input_up == true && game->ship_velocity[1] < 2.0f) {
 		game->ship_velocity[1] += 0.02;
@@ -348,9 +351,10 @@ void Game::Update(GLFWwindow* window) {
 	game->camera_.Yaw(rot_factor*ship_rotation[1]);
 	game->camera_.Roll(-rot_factor*ship_rotation[2]);
 
-	if (!input_b) {
-		heli->SetOrientation(game->camera_.GetOrientation());
-		heli->Rotate(glm::quat(glm::angleAxis(((glm::pi<float>() / (float) 1.0)), glm::vec3(0.0, 1.0, 0.0))));
+	if (input_b == false) {
+		//heli->SetOrientation(game->camera_.GetOrientation());
+		heli->Yaw(rot_factor*ship_rotation[1]);
+		//heli->Rotate(glm::quat(glm::angleAxis(((glm::pi<float>() / (float) 1.0)), glm::vec3(0.0, 1.0, 0.0))));
 	}
 	game->lazerref->SetForward(game->camera_.GetForward());
 	for (int i = 0; i < childlasers.size(); ++i) {
@@ -360,9 +364,9 @@ void Game::Update(GLFWwindow* window) {
 
 	game->camera_.Translate((game->camera_.GetForward() * (offsetx * -1.0f)) - (game->camera_.GetUp() * offsety) * -1.0f);
 
-	game->camera_.Translate(game->camera_.GetForward()*trans_factor*ship_velocity[2]);
-	game->camera_.Translate(-game->camera_.GetSide()*trans_factor*ship_velocity[0]);
-	game->camera_.Translate(game->camera_.GetUp()*trans_factor*ship_velocity[1]);
+	game->camera_.Translate(game->heli->GetForward()*trans_factor*ship_velocity[2] * -1.0f);
+	game->camera_.Translate(-game->heli->GetSide()*trans_factor*ship_velocity[0] * -1.0f);
+	game->camera_.Translate(glm::vec3(0.0, 1.0, 0.0)*trans_factor*ship_velocity[1]);
 
 	glm::vec3 mov = glm::vec3(game->camera_.GetForward().x * ship_velocity[2] + game->camera_.GetSide().x * ship_velocity[0] + game->camera_.GetUp().x *ship_velocity[1]
 		, game->camera_.GetForward().y * ship_velocity[2] + game->camera_.GetSide().y * ship_velocity[0] + game->camera_.GetUp().y *ship_velocity[1]
@@ -412,14 +416,14 @@ void Game::Update(GLFWwindow* window) {
 
 	game->heli->SetPosition(game->camera_.GetPosition() + (game->camera_.GetForward() * offsetx) - (game->camera_.GetUp() * offsety));
 
-	if (game->input_c == true) {
+	if (game->input_c == true || game->input_m2 == true) {
 		lazerref->SetVisible(true);
-		lazerref->SetPosition(this->heli->GetPosition() + this->camera_.GetForward() * 45.0f/* + game->camera_.GetUp()*((float)-0.1)*/); 
+		lazerref->SetPosition(this->heli->GetPosition() + this->heli->GetForward() * -45.0f/* + game->camera_.GetUp()*((float)-0.1)*/); 
 		lazerref->SetOrientation(this->heli->GetOrientation());
 		for (int i = 0; i < childlasers.size(); ++i) {
 			if (hostcollected[i]) {
 				childlasers[i]->SetVisible(true);
-				childlasers[i]->SetPosition(hostages[i]->GetPosition() + this->camera_.GetForward() * 45.0f/* + game->camera_.GetUp()*((float)-0.1)*/);
+				childlasers[i]->SetPosition(hostages[i]->GetPosition() + hostages[i]->GetForward() * 45.0f/* + game->camera_.GetUp()*((float)-0.1)*/);
 				childlasers[i]->SetOrientation(hostages[i]->GetOrientation());
 			}
 		}
@@ -431,7 +435,7 @@ void Game::Update(GLFWwindow* window) {
 			childlasers[i]->SetVisible(false);
 		}
 	}
-	if (game->input_m == true) {
+	if (game->input_m == true || game->input_m1 == true) {
 		CreateMissileInstance("missile", "SimpleCylinderMesh", "ObjectMaterial");
 	}
 	for (int i = 0; i < missiles.size(); i++) {
@@ -448,6 +452,59 @@ void Game::Update(GLFWwindow* window) {
 	checkForCollisions(window, false);
 }
 
+void Game::ScrollWheelCallback(GLFWwindow* window, double xoffset, double yoffset) {
+	void* ptr = glfwGetWindowUserPointer(window);
+	Game *game = (Game *)ptr;
+	//std::cout << "xoffset: " << xoffset << " yoffset: " << yoffset << std::endl;
+
+	//glm::vec2 offsetVec2 = glm::vec2(game->offsetx, game->offsety);
+	//glm::vec3 offsetVec = game->camera_.GetForward() * game->offsetx + game->camera_.GetUp() * game->offsety;
+	//glm::quat offsetQuat = glm::rotate(game->camera_.GetOrientation(), -0.05f * (float)yoffset, game->camera_.GetSide());
+
+	//offsetVec = offsetVec * offsetQuat;
+	//game->offsetx = offsetVec2.x;
+	//game->offsety = offsetVec2.y;
+	//std::cout << game->offsetx << " : " << game->offsety << std::endl;
+	//float offx = game->offsetx * cos(0.05 * yoffset) - game->offsety * sin(0.05 * yoffset);
+	//float offy = game->offsety * cos(0.05 * yoffset) + game->offsetx * sin(0.05 * yoffset);
+
+	//game->offsetx = offx;
+	//game->offsety = offy;
+
+	//std::cout << game->offsetx << " : " << game->offsety << std::endl;
+	game->camera_.Translate((game->camera_.GetForward() * game->offsetx) - (game->camera_.GetUp() * game->offsety));
+
+	game->camera_.Rotate(glm::angleAxis(-0.05f * (float)yoffset, game->camera_.GetSide()));
+	game->PrintVec3(game->camera_.GetForward());
+
+	game->camera_.Translate((game->camera_.GetForward() * (game->offsetx * -1.0f)) - (game->camera_.GetUp() * game->offsety) * -1.0f);
+
+
+}
+
+void Game::MouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
+	void* ptr = glfwGetWindowUserPointer(window);
+	Game *game = (Game *)ptr;
+
+	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+		game->input_m1 = true;
+	}
+	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
+		game->input_m1 = false;
+	}
+	if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
+		game->input_m2 = true;
+	}
+	if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE) {
+		game->input_m2 = false;
+	}
+	if (button == GLFW_MOUSE_BUTTON_MIDDLE && action == GLFW_PRESS) {
+		game->input_m3 = true;
+	}
+	if (button == GLFW_MOUSE_BUTTON_MIDDLE && action == GLFW_RELEASE) {
+		game->input_m3 = false;
+	}
+}
 
 void Game::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods){
 
@@ -587,7 +644,7 @@ void Game::SetupHelicopter(void) {
 	rotor2 = CreateInstance("rotor2", "HeliRotorMesh", "ToonHeliMaterial", "rotor1");
 	//tail = CreateInstance("tail", "CylinderMesh", "ToonHeliMaterial", "heli");
 	rotor3 = CreateInstance("rotor3", "CylinderMesh", "ToonHeliMaterial", "heli");
-	heli->Rotate(glm::angleAxis((float) 180.0, glm::vec3(0.0, 1.0, 0.0)));
+	heli->Rotate(glm::angleAxis((float)90.0, glm::vec3(0.0, 1.0, 0.0)));
 	heli->Translate(glm::vec3(0.0, 0.0, 0.0));
 	//body2->Translate(glm::vec3(0.0, 0.3, -0.25));
 	//heli->Scale(glm::vec3(1.0, 0.4, 3.5));
@@ -610,9 +667,44 @@ void Game::SetupHelicopter(void) {
 	rotor3->SetAngM(glm::quat(glm::angleAxis((float) 1.0, glm::vec3(1.0, 0.0, 0.0))));
 }
 
+void Game::SetupHelicopterOld(void) {
+
+	heli = CreateHeliInstance("heli", "CubeMesh", "ToonHeliMaterial", "Root");
+	heli->SetPosition(glm::vec3(0.0, 0.0, 0.0));
+	body2 = CreateInstance("body2", "CubeMesh", "ToonHeliMaterial", "heli");
+
+	rotor1 = CreateInstance("rotor1", "CylinderMesh", "ToonHeliMaterial", "body2");
+	rotor2 = CreateInstance("rotor2", "CylinderMesh", "ToonHeliMaterial", "rotor1");
+	tail = CreateInstance("tail", "CylinderMesh", "ToonHeliMaterial", "heli");
+	rotor3 = CreateInstance("rotor3", "CylinderMesh", "ToonHeliMaterial", "tail");
+	heli->Rotate(glm::angleAxis((float) 3.14, glm::vec3(0.0, 1.0, 0.0)));
+	heli->Translate(glm::vec3(0.0, 0.0, 0.0));
+	body2->Translate(glm::vec3(0.0, 0.3, -0.25));
+	heli->Scale(glm::vec3(1.0, 0.4, 3.5));
+	body2->Scale(glm::vec3(1.0, 0.3, 3.0));
+	glm::quat rotation = glm::angleAxis((float)4.709, glm::vec3(1.0, 0.0, 0.0));
+
+	rotor1->SetOrientation(rotation);
+	rotor1->Translate(glm::vec3(0.0, 0.4 - 0.175, 0.0));
+	rotor1->Scale(glm::vec3(1.0, 1.0, 0.1));
+	//rotation = glm::angleAxis(3.3f, glm::vec3(0.0, 1.0, 0.0));
+	rotor2->Translate(glm::vec3(0.0, 0.0, 0.1));
+	rotor2->SetOrientation(rotation);
+	rotor2->Scale(glm::vec3(1.0, 0.2, 1.5));
+	rotor2->SetAngM(glm::quat(glm::angleAxis((float) 0.5, glm::vec3(0.0, 1.0, 0.0))));
+	tail->Scale(glm::vec3(0.8, 0.6, 1.24));
+	tail->Translate(glm::vec3(0.0, 0.1, -1.5));
+	rotation = glm::angleAxis(8.0f, glm::vec3(1.0, 0.0, 0.0));
+	rotor3->Rotate(rotation);
+	rotor3->Scale(glm::vec3(0.2, .75, 0.4));
+	rotor3->Translate(glm::vec3(0.0, 0.0, -1.5));
+	rotor3->SetAngM(glm::quat(glm::angleAxis((float) 1.0, glm::vec3(1.0, 0.0, 0.0))));
+
+}
+
 void Game::SetupHostage(std::string name) {
 
-	SceneNode* host = (Helicopter *)CreateInstance(name, "SimpleSphereMesh", "ToonHeliMaterial", "Root");
+	Helicopter* host = CreateHeliInstance(name, "SimpleSphereMesh", "ToonHeliMaterial", "Root");
 
 	SceneNode* nose = (Helicopter *)CreateInstance(name+" nose", "SimpleSphereMesh", "ToonHeliMaterial", name);
 	SceneNode* rot1 = CreateInstance(name+" rotor1", "CylinderMesh", "ToonHeliMaterial", name);
@@ -662,16 +754,19 @@ void Game::SetupWorld() {
 	ground->Scale(glm::vec3(1200, 10, 1200));
 	SceneNode* b;
 	std::stack<bool *> occupiedArea;
+	glm::vec3* vertices;
+	glm::vec3 scaleFactor;
 	for (int i = 0; i < 60; i++) {
 		b = CreateInstance("EnvironmentCube" + std::to_string(i), "CubeMesh", "ToonRingMaterial", "Root");
+		scaleFactor = glm::vec3((float)(4.0 + ((float)(rand() % 20))), (float)(4.0 + ((float)(rand() % 20))), (float)(4.0 + ((float)(rand() % 20))));
 		float factor = (float)(1.0 + ((float)(rand() % 20)));
-		b->SetPosition(glm::vec3((float)(rand() % 300), -5.0 + factor / 2.0, (float)(rand() % 300)));
+		b->SetPosition(glm::vec3((float)(rand() % 300), -5.0 + scaleFactor.y / 2.0f, (float)(rand() % 300)));
 		bool check = false;
 		int patience = 0;
 		bool yes = true;
 		while (yes) {
-			for (int k = 0 - (int)(factor / 2.0); k < (int)factor; k++) {
-				for (int j = 0 - (int)(factor / 2.0); j < (int)factor; j++) {
+			for (int k = 0 - (int)(scaleFactor.x / 2.0f); k < (int)scaleFactor.x; k++) {
+				for (int j = 0 - (int)(scaleFactor.z / 2.0f); j < (int)scaleFactor.z; j++) {
 					int x = (int)b->GetPosition().x + k;
 					int z = (int)b->GetPosition().z + j;
 					if (x < 300 && z < 300 && x >= 0 && z >= 0)
@@ -681,18 +776,19 @@ void Game::SetupWorld() {
 							occupiedArea.push(&table[x][z]);
 				}
 				if (check)
-					k = (int)factor;
+					break;
 			}
 			if (check) {
-				occupiedArea.empty();
+				while (occupiedArea.size() > 0) {
+					occupiedArea.pop();
+				}
 				if ((patience % 30) == 29) {
-					factor = (float)(1.0 + ((float)(rand() % 20)));
+					scaleFactor = glm::vec3((float)(1.0 + ((float)(rand() % 20))), (float)(1.0 + ((float)(rand() % 20))), (float)(1.0 + ((float)(rand() % 20))));
 				}
 				else
 					patience++;
-				b->SetPosition(glm::vec3((float)(rand() % 300), -5.0 + factor / 2.0, (float)(rand() % 300)));
+				b->SetPosition(glm::vec3((float)(rand() % 300), -5.0 + scaleFactor.y / 2.0f, (float)(rand() % 300)));
 				check = false;
-
 			}
 			else
 				yes = false;
@@ -701,7 +797,42 @@ void Game::SetupWorld() {
 			*occupiedArea.top() = true;
 			occupiedArea.pop();
 		}
-		b->Scale(glm::vec3(1.0, 1.0, 1.0) * factor);
+		b->Scale(scaleFactor);
+
+		vertices = new glm::vec3[8];
+		glm::vec3 top = glm::vec3(0.0, 1.0, 0.0) * (scaleFactor.y / 2.0f);
+		glm::vec3 bot = glm::vec3(0.0, 1.0, 0.0) * (scaleFactor.y / 2.0f) * -1.0f;
+		glm::vec3 left = glm::vec3(1.0, 0.0, 0.0) * (scaleFactor.x / 2.0f);
+		glm::vec3 right = glm::vec3(1.0, 0.0, 0.0) * (scaleFactor.x / 2.0f) * -1.0f;
+		glm::vec3 front = glm::vec3(0.0, 0.0, 1.0) * (scaleFactor.z / 2.0f);
+		glm::vec3 back = glm::vec3(0.0, 0.0, 1.0) * (scaleFactor.z / 2.0f) * -1.0f;
+
+		vertices[0] = b->GetPosition() + top + front + right;
+		vertices[1] = b->GetPosition() + top + front + left;
+		vertices[2] = b->GetPosition() + top + back + right;
+		vertices[3] = b->GetPosition() + top + back + left;
+		vertices[4] = b->GetPosition() + bot + front + right;
+		vertices[5] = b->GetPosition() + bot + front + left;
+		vertices[6] = b->GetPosition() + bot + back + right;
+		vertices[7] = b->GetPosition() + bot + back + left;
+		b->SetBoundingBox(vertices);
+		if (i < 60)
+			for (int a = 0; a < 8; a++) {
+				std::stringstream ss;
+				ss << i;
+				std::string index = ss.str();
+				std::string name = "CornerInstance" + index;
+				SceneNode* sphere = CreateAsteroidInstance(name, "SimpleSphereMesh", "ObjectMaterial");
+				sphere->SetPosition(vertices[a]);
+				sphere->SetScale(glm::vec3(1.0, 1.0, 1.0) * 1.5f);
+				/*
+				if (a % 2 == 1) {
+					sphere->SetOrientation(glm::normalize(glm::angleAxis(glm::pi<float>()*((float)rand() / RAND_MAX), glm::vec3(((float)rand() / RAND_MAX), ((float)rand() / RAND_MAX), ((float)rand() / RAND_MAX)))));
+					sphere->SetAngM(glm::normalize(glm::angleAxis(0.05f*glm::pi<float>()*((float)rand() / RAND_MAX), glm::vec3(((float)rand() / RAND_MAX), ((float)rand() / RAND_MAX), ((float)rand() / RAND_MAX)))));
+				}
+				*/
+				scene_.GetNode("Root")->AddChild(sphere);
+			}
 	}
 	for (int i = 0; i < 300; i++)
 		delete(table[i]);
@@ -741,8 +872,8 @@ void Game::checkForCollisions(GLFWwindow* window, bool laser) {
 
 
 	s = heli->GetPosition();//(lazerref->GetPosition() - (this->camera_.GetForward() * 45.0f));
-	PrintVec3(heli->GetPosition());
-	PrintVec3(camera_.GetPosition());
+	//PrintVec3(heli->GetPosition());
+	//PrintVec3(camera_.GetPosition());
 	d = glm::normalize(lazerref->GetForward());
 	for (int j = 0; j < collidables.size(); j++) {
 		a = collidables[j]->GetPosition();
@@ -975,6 +1106,34 @@ SceneNode *Game::CreateInstance(std::string entity_name, std::string object_name
 	}
 	// Create instance
 	SceneNode *node = new SceneNode(entity_name, geom, mat);
+	scene_.GetNode(parent_name)->AddChild(node);
+	return node;
+}
+Helicopter* Game::CreateHeliInstance(std::string entity_name, std::string object_name, std::string material_name, std::string parent_name) {
+
+	Resource *geom;
+	if (object_name != std::string("")) {
+		geom = resman_.GetResource(object_name);
+		if (!geom) {
+			throw(GameException(std::string("Could not find resource \"") + object_name + std::string("\"")));
+		}
+	}
+	else {
+		geom = NULL;
+	}
+
+	Resource *mat;
+	if (material_name != std::string("")) {
+		mat = resman_.GetResource(material_name);
+		if (!mat) {
+			throw(GameException(std::string("Could not find resource \"") + material_name + std::string("\"")));
+		}
+	}
+	else {
+		mat = NULL;
+	}
+	// Create instance
+	Helicopter* node = new Helicopter(entity_name, geom, mat);
 	scene_.GetNode(parent_name)->AddChild(node);
 	return node;
 }

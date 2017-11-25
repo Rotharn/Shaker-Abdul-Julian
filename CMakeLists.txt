@@ -5,11 +5,11 @@ project(CameraDemo)
 
 # Specify project files: header files and source files
 set(HDRS
-    helicopter.h asteroid.h camera.h game.h resource.h resource_manager.h scene_graph.h scene_node.h
+    Enemy.h helicopter.h asteroid.h camera.h game.h resource.h resource_manager.h scene_graph.h scene_node.h
 )
  
 set(SRCS
-    helicopter.cpp asteroid.cpp camera.cpp game.cpp main.cpp resource.cpp resource_manager.cpp scene_graph.cpp scene_node.cpp material_vp.glsl material_fp.glsl shiny_blue_fp.glsl  shiny_blue_vp.glsl toon_fp.glsl toon_vp.glsl texture_fp.glsl texture_vp.glsl toon_heli_vp.glsl toon_heli_fp.glsl
+    Enemy.cpp helicopter.cpp asteroid.cpp camera.cpp game.cpp main.cpp resource.cpp resource_manager.cpp scene_graph.cpp scene_node.cpp material_vp.glsl material_fp.glsl shiny_blue_fp.glsl  shiny_blue_vp.glsl toon_fp.glsl toon_vp.glsl texture_fp.glsl texture_vp.glsl toon_heli_vp.glsl toon_heli_fp.glsl
 )
 
 

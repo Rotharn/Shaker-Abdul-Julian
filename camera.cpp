@@ -86,7 +86,8 @@ void Camera::Pitch(float angle){
 
 void Camera::Yaw(float angle){
 
-    glm::quat rotation = glm::angleAxis(angle, GetUp());
+	//glm::quat rotation = glm::angleAxis(angle, GetUp());
+    glm::quat rotation = glm::angleAxis(angle, glm::vec3(0.0, 1.0, 0.0));
     orientation_ = rotation * orientation_;
 }
 

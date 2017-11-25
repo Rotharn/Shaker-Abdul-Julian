@@ -11,8 +11,10 @@
 
 
 namespace game {
-	Helicopter::Helicopter(){
-
+	Helicopter::Helicopter(const std::string name, const Resource *geometry, const Resource *material) : SceneNode(name, geometry, material){
+		forward_ = glm::vec3(0.0, 0.0, 1.0);
+		side_ = glm::vec3(1.0, 0.0, 0.0);
+		
 	}
 	Helicopter::Helicopter(SceneNode* node) {
 		
@@ -25,7 +27,7 @@ namespace game {
 
 
 	glm::vec3 Helicopter::GetForward(void) const {
-
+		std::cout << forward_[0] << " " << forward_[1] << " " << forward_[2] << std::endl;
 		glm::vec3 current_forward = orientation_ * forward_;
 		return -current_forward; // Return -forward since the camera coordinate system points in the opposite direction
 	}
@@ -57,7 +59,8 @@ namespace game {
 
 	void Helicopter::Yaw(float angle) {
 
-		glm::quat rotation = glm::angleAxis(angle, GetUp());
+		//glm::quat rotation = glm::angleAxis(angle, GetUp());
+		glm::quat rotation = glm::angleAxis(angle, glm::vec3(0.0, 1.0, 0.0));
 		orientation_ = rotation * orientation_;
 	}
 
