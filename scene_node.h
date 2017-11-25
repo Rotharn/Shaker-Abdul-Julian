@@ -12,7 +12,7 @@
 
 #include "resource.h"
 #include "camera.h"
-
+#include <iostream>
 namespace game {
 
 	// Class that manages one object in a scene 

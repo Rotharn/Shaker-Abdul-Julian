@@ -27,7 +27,6 @@ namespace game {
 
 
 	glm::vec3 Helicopter::GetForward(void) const {
-		std::cout << forward_[0] << " " << forward_[1] << " " << forward_[2] << std::endl;
 		glm::vec3 current_forward = orientation_ * forward_;
 		return -current_forward; // Return -forward since the camera coordinate system points in the opposite direction
 	}
