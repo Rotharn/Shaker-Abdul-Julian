@@ -94,6 +94,13 @@ void SceneNode::SetPosition(glm::vec3 position){
 
 void SceneNode::SetVisible(bool visible) {
 	this->visible_ = visible;
+	if (this->children_.size() > 0) {
+		for (std::vector<SceneNode *>::const_iterator it = this->children_begin();
+		it != children_end(); it++) {
+			SceneNode* current = *it;
+			current->SetVisible(visible);
+		}
+	}
 }
 
 

@@ -84,8 +84,8 @@ namespace game {
 			std::vector<bool> hostcollected;
 			std::vector<SceneNode *> collidables;
 
-			bool input_up, input_down, input_left, input_right, input_s, input_x, input_a, input_z,
-				 input_j, input_l, input_i, input_k, input_c, input_m, input_t, input_w, input_d, input_b,
+			bool input_up, input_down, input_left, input_right, input_s, input_x, input_a, input_z, input_e, input_q,
+				 input_j, input_l, input_i, input_k, input_c, input_m, input_t, input_w, input_d, input_b, input_space, input_shift,
 				 input_m1, input_m2, input_m3;
 			float offsetx, offsety;
 

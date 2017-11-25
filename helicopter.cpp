@@ -15,6 +15,12 @@ namespace game {
 		forward_ = glm::vec3(0.0, 0.0, 1.0);
 		side_ = glm::vec3(1.0, 0.0, 0.0);
 		
+		health = 20.0;
+		armour = 1.0;
+
+		time = glfwGetTime();
+
+
 	}
 	Helicopter::Helicopter(SceneNode* node) {
 		
@@ -24,6 +30,11 @@ namespace game {
 
 	}
 
+
+	void Helicopter::Hit(float dmg) {
+		this->health -= glm::max(0.1f, dmg * 1 / armour);
+		this->wasHit = glfwGetTime();
+	}
 
 
 	glm::vec3 Helicopter::GetForward(void) const {
@@ -69,6 +80,24 @@ namespace game {
 		glm::quat rotation = glm::angleAxis(angle, GetForward());
 		orientation_ = rotation * orientation_;
 	}
+
+	void Helicopter::Update() {
+		float dtime = glfwGetTime() - time;
+		time = glfwGetTime();
+		if ((time - wasHit) > 3.0) {
+			if (visible_)
+				this->SetVisible(false);
+			else
+				this->SetVisible(true);
+		}
+		else if (wasHit > 0.0) {
+			wasHit = 0.0;
+			this->SetVisible(true);
+		}
+
+		Rotate(angm_);
+	}
+
 
 
 

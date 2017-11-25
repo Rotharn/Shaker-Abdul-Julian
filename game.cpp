@@ -229,41 +229,41 @@ void Game::Update(GLFWwindow* window) {
 	//game->test->Scale(glm::vec3(1.01, 1.01, 1.01));
 	//PrintVec3(game->test->GetScale());
 
-	if (game->input_up == true && game->ship_velocity[1] < 2.0f) {
+	if ((game->input_up == true || game->input_space == true) && game->ship_velocity[1] < 2.0f) {
 		game->ship_velocity[1] += 0.02;
 	}
-	if (game->input_up == false && game->ship_velocity[1] > 0.0f) {
+	if ((game->input_up == false && game->input_space == false) && game->ship_velocity[1] > 0.0f) {
 		if (game->ship_velocity[1] < 0.02f)
 			game->ship_velocity[1] = 0.0;
 		else
 			game->ship_velocity[1] -= 0.02;
 	}
 
-	if (game->input_down == true && game->ship_velocity[1] > -2.0f) {
+	if ((game->input_down == true || game->input_shift == true) && game->ship_velocity[1] > -2.0f) {
 
 		game->ship_velocity[1] -= 0.02;
 	}
-	if (game->input_down == false && game->ship_velocity[1] < 0.0f) {
+	if ((game->input_down == false && game->input_shift == false) && game->ship_velocity[1] < 0.0f) {
 		if (game->ship_velocity[1] > -0.02f)
 			game->ship_velocity[1] = 0.0;
 		else
 			game->ship_velocity[1] += 0.02;
 	}
 
-	if (game->input_left == true && game->ship_rotation[1] < 2.0f) {
+	if ((game->input_left == true || game->input_q == true) && game->ship_rotation[1] < 2.0f) {
 		game->ship_rotation[1] += 0.02;
 	}
-	if (game->input_left == false && game->ship_rotation[1] > 0.0f) {
+	if ((game->input_left == false && game->input_q == false) && game->ship_rotation[1] > 0.0f) {
 		if (game->ship_rotation[1] < 0.02f)
 			game->ship_rotation[1] = 0.0;
 		else
 			game->ship_rotation[1] -= 0.02;
 	}
 
-	if (game->input_right == true && game->ship_rotation[1] > -2.0f) {
+	if ((game->input_right == true || game->input_e == true) && game->ship_rotation[1] > -2.0f) {
 		game->ship_rotation[1] -= 0.02;
 	}
-	if (game->input_right == false && game->ship_rotation[1] < 0.0f) {
+	if ((game->input_right == false && game->input_e == false) && game->ship_rotation[1] < 0.0f) {
 		if (game->ship_rotation[1] > -0.02f)
 			game->ship_rotation[1] = 0.0;
 		else
@@ -513,14 +513,10 @@ void Game::KeyCallback(GLFWwindow* window, int key, int scancode, int action, in
     Game *game = (Game *) ptr;
 
     // Quit game if 'q' is pressed
-    if (key == GLFW_KEY_Q && action == GLFW_PRESS){
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS){
         glfwSetWindowShouldClose(window, true);
     }
 
-    // Stop animation if space bar is pressed
-    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS){
-        game->animating_ = (game->animating_ == true) ? false : true;
-    }
     // Ship control
     float rot_factor(glm::pi<float>() / 180);
     float trans_factor = 1.0;
@@ -615,7 +611,30 @@ void Game::KeyCallback(GLFWwindow* window, int key, int scancode, int action, in
 	}else if (key == GLFW_KEY_T && action == GLFW_RELEASE) {
 		game->input_t = false;
 	}
-
+	if (key == GLFW_KEY_Q && action == GLFW_PRESS) {
+		game->input_q = true;
+	}
+	if (key == GLFW_KEY_Q && action == GLFW_RELEASE) {
+		game->input_q = false;
+	}
+	if (key == GLFW_KEY_E && action == GLFW_PRESS) {
+		game->input_e = true;
+	}
+	if (key == GLFW_KEY_E && action == GLFW_RELEASE) {
+		game->input_e = false;
+	}
+	if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
+		game->input_space = true;
+	}
+	if (key == GLFW_KEY_SPACE && action == GLFW_RELEASE) {
+		game->input_space = false;
+	}
+	if (mods == GLFW_MOD_SHIFT && action == GLFW_PRESS) {
+		game->input_shift = true;
+	}
+	else {
+		game->input_shift = false;
+	}
 }
 
 

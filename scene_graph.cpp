@@ -93,7 +93,7 @@ namespace game {
 			it != current->children_end(); it++) {
 				stck.push(*it);
 				transf.push(current_transf);
-				
+
 			}
 		}
 	}
