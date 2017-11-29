@@ -11,6 +11,7 @@
 #include "resource_manager.h"
 #include "camera.h"
 #include "asteroid.h"
+#include "Enemy.h"
 
 #include <deque>
 
@@ -36,6 +37,7 @@ namespace game {
             ~Game();
             // Call Init() before calling any other method
             void Init(void); 
+			void InitInputs();
             // Set up resources for the game
             void SetupResources(void);
             // Set up initial scene
@@ -54,6 +56,7 @@ namespace game {
 			void SetupHelicopter();
 			void SetupHelicopterOld();
 			void SetupWorld();
+			void SetupEnemies();
 			void SetupHostage(std::string name);
 
         protected:
@@ -79,10 +82,12 @@ namespace game {
 			SceneNode* lazerref;
 			std::deque<SceneNode*> missiles;
 			std::deque<std::deque<SceneNode*>> childmissiles;
-			std::vector<SceneNode*> hostages;
+			std::vector<Helicopter*> hostages;
 			std::deque<SceneNode*> childlasers;
 			std::vector<bool> hostcollected;
 			std::vector<SceneNode *> collidables;
+			std::vector<Enemy*> enemies;
+			std::vector<glm::vec3> spawnPoints;
 
 			bool input_up, input_down, input_left, input_right, input_s, input_x, input_a, input_z, input_e, input_q,
 				 input_j, input_l, input_i, input_k, input_c, input_m, input_t, input_w, input_d, input_b, input_space, input_shift,
@@ -116,6 +121,10 @@ namespace game {
             // Asteroid field
             // Create instance of one asteroid
             Asteroid *CreateAsteroidInstance(std::string entity_name, std::string object_name, std::string material_name);
+			/*Enemy Types
+				type == 0 : Stationary				
+			*/
+			Enemy* CreateEnemyInstance(std::string entity_name, std::string object_namee, std::string material_name, int enemyType);
             // Create entire random asteroid field
             void CreateAsteroidField(int num_asteroids = 200);
 			void CreateLaserInstance(std::string entity_name, std::string object_name, std::string material_name);

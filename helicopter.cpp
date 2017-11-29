@@ -17,7 +17,7 @@ namespace game {
 		
 		health = 20.0;
 		armour = 1.0;
-
+		visible_ = true;
 		time = glfwGetTime();
 
 
@@ -84,7 +84,10 @@ namespace game {
 	void Helicopter::Update() {
 		float dtime = glfwGetTime() - time;
 		time = glfwGetTime();
-		if ((time - wasHit) > 3.0) {
+		if (this->hit && wasHit == 0.0) {
+			Hit(hitDmg);
+		}
+		if ((time - wasHit) < 3.0) {
 			if (visible_)
 				this->SetVisible(false);
 			else
@@ -92,6 +95,7 @@ namespace game {
 		}
 		else if (wasHit > 0.0) {
 			wasHit = 0.0;
+			this->hit = false;
 			this->SetVisible(true);
 		}
 

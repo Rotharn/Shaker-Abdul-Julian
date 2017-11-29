@@ -2,13 +2,13 @@
 #include "scene_node.h"
 
 #include "resource_manager.h"
-#include "helicopter.h"
+//#include "helicopter.h"
 
 namespace game {
 	class Enemy : public SceneNode {
 
 	public:
-		Enemy(const std::string name, const Resource *geometry, const Resource *material, Helicopter* player, ResourceManager* resman);
+		Enemy(const std::string name, const Resource *geometry, const Resource *material, SceneNode* player, ResourceManager* resman);
 		~Enemy();
 
 		class EnemyException : public std::exception
@@ -46,7 +46,9 @@ namespace game {
 		int type;
 		float damage;
 		float time;
-		Helicopter* player;
+		float incrementingFloat;
+		SceneNode* player;
+		//glm::vec3 playerpos;
 
 		ResourceManager* enemyResMan;
 

@@ -34,7 +34,7 @@ namespace game {
             // Create the geometry for a torus and add it to the list of resources
             void CreateTorus(std::string object_name, float loop_radius = 0.6, float circle_radius = 0.2, int num_loop_samples = 90, int num_circle_samples = 30);
             void CreateSphere(std::string object_name, float radius = 0.6, int num_samples_theta = 90, int num_samples_phi = 45);
-			void CreateCylinder(std::string object_name, float height = 0.0, float circle_radius = 0.2, int num_line_samples = 3, int num_circle_samples = 30);
+			void CreateCylinder(std::string object_name, float height = 0.0, float circle_radius = 0.2, int num_line_samples = 3, int num_circle_samples = 30, int startingPoint = -1);
 			void CreateCube(std::string object_name);
 
         private:

@@ -740,7 +740,7 @@ void ResourceManager::CreateSphere(std::string object_name, float radius, int nu
 
 
 
-void ResourceManager::CreateCylinder(std::string object_name, float height, float circle_radius, int num_line_samples, int num_circle_samples) {
+void ResourceManager::CreateCylinder(std::string object_name, float height, float circle_radius, int num_line_samples, int num_circle_samples, int startingPoint) {
 	// Create a cylinder
 	// The cylinder is built from a line with small circles around the line
 	// Vertices are sampled along the circles
@@ -771,7 +771,7 @@ void ResourceManager::CreateCylinder(std::string object_name, float height, floa
 
 	// Create vertices 
 	float theta, phi, current_height; // Angles for circles
-	int init_height = -1;
+	int init_height = startingPoint;
 	int offset = 0;
 	int offset2;
 	glm::vec3 loop_center;

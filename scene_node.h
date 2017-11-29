@@ -33,14 +33,12 @@ namespace game {
 		glm::vec3 GetPosition(void) const;
 		glm::quat GetOrientation(void) const;
 		glm::vec3 GetScale(void) const;
-		glm::vec3 GetForward(void) const;
 
 		// Set node attributes
 		void SetPosition(glm::vec3 position);
 		void SetOrientation(glm::quat orientation);
 		void SetScale(glm::vec3 scale);
 		void SetMaterial(GLuint material);
-		void SetForward(glm::vec3 forward_);
 		void SetBoundingBox(glm::vec3* box);
 
 		// Perform transformations on node
@@ -64,6 +62,8 @@ namespace game {
 		GLsizei GetSize(void) const;
 		GLuint GetMaterial(void) const;
 
+		void SetHit(float dmg);
+
 
 		glm::quat GetAngM(void) const;
 		void SetAngM(glm::quat angm);
@@ -86,6 +86,8 @@ namespace game {
 		glm::vec3 scale_; // Scale of node
 		glm::vec3 forward;
 		bool visible_;
+		bool hit;
+		float hitDmg;
 		glm::quat angm_;
 		/*
 			[0] - [3] Top Four Vertices
