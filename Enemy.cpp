@@ -3,7 +3,9 @@
 
 namespace game{
 	Enemy::Enemy(const std::string name, const Resource *geometry, const Resource *material, SceneNode* player, ResourceManager* resman) : SceneNode ( name, geometry, material) {
-		
+
+		forward_ = glm::vec3(0.0, 0.0, 1.0);
+		side_ = glm::vec3(1.0, 0.0, 0.0);
 		
 		this->type = STATIONARY;
 		this->damage = 1.0;
@@ -13,6 +15,7 @@ namespace game{
 		this->player = player;
 		this->enemyResMan = resman;
 		//this->SetScale(glm::vec3(0.01, 0.01, 0.01));
+		incrementingFloat = 0.0;
 	}
 
 	Enemy::~Enemy() {
@@ -24,7 +27,17 @@ namespace game{
 		float dtime = time - glfwGetTime();
 		dtime += (2.0 + (float) (rand() % 5)) / 10.0f;
 		if (type == STATIONARY) {
-			//SetOrientation(glm::angleAxis(glm::dot(this->position_, player->GetPosition()), glm::cross(this->position_, player->GetPosition())));
+			
+			glm::vec3 zax = glm::normalize(player->GetPosition() - this->position_);
+			glm::vec3 xax = glm::normalize(glm::cross(this->GetUp(), zax));
+			glm::vec3 yax = glm::cross(zax, xax);
+			glm::mat3 aax = glm::mat3(xax, yax, zax);
+			SetOrientation(glm::quat(aax));
+			//SetOrientation(glm::normalize(glm::angleAxis(glm::normalize(1.0f * glm::dot(this->position_, this->position_ - player->GetPosition())), glm::normalize(glm::cross(this->GetPosition(), this->position_ - player->GetPosition())))));
+			
+			
+			
+			incrementingFloat += 0.01;
 			if (dtime > 2.0) {
 				time = glfwGetTime();
 				Shoot();
@@ -81,7 +94,7 @@ namespace game{
 
 	glm::vec3 Enemy::GetForward(void) const {
 		glm::vec3 current_forward = orientation_ * forward_;
-		return -current_forward; // Return -forward since the camera coordinate system points in the opposite direction
+		return current_forward; // Return -forward since the camera coordinate system points in the opposite direction
 	}
 
 

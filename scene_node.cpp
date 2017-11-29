@@ -87,9 +87,6 @@ glm::vec3 SceneNode::GetScale(void) const {
     return scale_;
 }
 
-glm::vec3 SceneNode::GetForward(void) const {
-	return forward;
-}
 
 void SceneNode::SetPosition(glm::vec3 position){
 
@@ -124,9 +121,6 @@ void SceneNode::SetBoundingBox(glm::vec3* box) {
 	boundingBox = box;
 }
 
-void SceneNode::SetForward(glm::vec3 forward_) {
-	forward = forward_;
-}
 
 void SceneNode::Translate(glm::vec3 trans){
     position_ += trans;

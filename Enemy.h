@@ -46,6 +46,7 @@ namespace game {
 		int type;
 		float damage;
 		float time;
+		float incrementingFloat;
 		SceneNode* player;
 		//glm::vec3 playerpos;
 

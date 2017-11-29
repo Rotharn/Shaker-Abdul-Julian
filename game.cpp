@@ -43,6 +43,12 @@ void Game::Init(void){
     InitView();
     InitEventHandlers();
 
+	time_t theLocalTime;
+	struct tm * timeinfo;
+	time(&theLocalTime);
+	timeinfo = localtime(&theLocalTime);
+	srand(timeinfo->tm_hour + timeinfo->tm_min + timeinfo->tm_sec);
+
     // Set variables
     animating_ = true;
 	positions = std::deque<glm::vec3>(25,glm::vec3(0.0,0.0,0.0));
@@ -117,7 +123,8 @@ void Game::SetupResources(void){
     // Create a simple sphere to represent the asteroids
     resman_.CreateSphere("SimpleSphereMesh", 1.0, 10, 10);
 	resman_.CreateCylinder("SimpleCylinderMesh", 0.0, 0.05,3,30);
-	resman_.CreateCylinder("CylinderMesh");
+	resman_.CreateCylinder("CylinderMesh",0.0f, 0.2f,3,10,-1);
+	resman_.CreateCylinder("LaserMesh", 0.0f, 0.2f, 3, 5, 0);
 	resman_.CreateCube("CubeMesh");
 
     // Load material to be applied to asteroids
@@ -144,13 +151,40 @@ void Game::SetupResources(void){
 
 
 }
+void Game::InitInputs() {
 
+	input_up = false; input_down = false; 
+	input_left = false; 
+	input_right = false; 
+	input_s = false; 
+	input_x = false; 
+	input_a = false; 
+	input_z = false; 
+	input_e = false; 
+	input_q = false;
+	input_j = false; 
+	input_l = false; 
+	input_i = false; 
+	input_k = false; 
+	input_c = false; 
+	input_m = false; 
+	input_t = false; 
+	input_w = false; 
+	input_d = false; 
+	input_b = false; 
+	input_space = false; 
+	input_shift = false;
+	input_m1 = false;
+	input_m2 = false; 
+	input_m3 = false;
+}
 
 void Game::SetupScene(void){
 	
-	input_b = false;
+	InitInputs();
 	offsetx = 20.0f;
 	offsety = 2.0f;
+
     // Set background color for the scene
 	scene_.SetBackgroundColor(viewport_background_color_g);
 	cameraNode = CreateInstance("Camera", "", "");
@@ -159,6 +193,7 @@ void Game::SetupScene(void){
 	scene_.SetRoot(root);
 	root->AddChild(cameraNode);
 	SetupHelicopterOld();
+	heli->Rotate(glm::angleAxis(3.14159f, glm::vec3(0.0, 1.0, 0.0)));
 	SetupWorld();
 	SetupEnemies();
 	positions = std::deque<glm::vec3>(25,heli->GetPosition());
@@ -170,7 +205,12 @@ void Game::SetupScene(void){
 	hostages[2]->SetPosition(glm::vec3(-44.0, 0.2, 5.0));
 	// Create asteroid field
 	CreateAsteroidField();
-	CreateLaserInstance("laser", "SimpleCylinderMesh", "ObjectMaterial");
+	CreateLaserInstance("laser", "LaserMesh", "ObjectMaterial");
+
+
+	camera_position_g = glm::vec3(0.0, -offsety, -offsetx);
+	camera_.SetView(camera_position_g, heli->GetPosition(), camera_up_g);
+
 }
 
 
@@ -357,10 +397,10 @@ void Game::Update(GLFWwindow* window) {
 		heli->Yaw(rot_factor*ship_rotation[1]);
 		//heli->Rotate(glm::quat(glm::angleAxis(((glm::pi<float>() / (float) 1.0)), glm::vec3(0.0, 1.0, 0.0))));
 	}
-	game->lazerref->SetForward(game->camera_.GetForward());
-	for (int i = 0; i < childlasers.size(); ++i) {
-		childlasers[i]->SetForward(game->camera_.GetForward());
-	}
+	//game->lazerref->SetForward(game->camera_.GetForward());
+	//for (int i = 0; i < childlasers.size(); ++i) {
+		//childlasers[i]->SetForward(game->camera_.GetForward());
+	//}
 
 
 	game->camera_.Translate((game->camera_.GetForward() * (offsetx * -1.0f)) - (game->camera_.GetUp() * offsety) * -1.0f);
@@ -419,12 +459,12 @@ void Game::Update(GLFWwindow* window) {
 
 	if (game->input_c == true || game->input_m2 == true) {
 		lazerref->SetVisible(true);
-		lazerref->SetPosition(this->heli->GetPosition() + this->heli->GetForward() * -45.0f/* + game->camera_.GetUp()*((float)-0.1)*/); 
+		lazerref->SetPosition(this->heli->GetPosition()/* + this->heli->GetForward() /* -45.0f/* + game->camera_.GetUp()*((float)-0.1)*/); 
 		lazerref->SetOrientation(this->heli->GetOrientation());
 		for (int i = 0; i < childlasers.size(); ++i) {
 			if (hostcollected[i]) {
 				childlasers[i]->SetVisible(true);
-				childlasers[i]->SetPosition(hostages[i]->GetPosition() + hostages[i]->GetForward() * 45.0f/* + game->camera_.GetUp()*((float)-0.1)*/);
+				childlasers[i]->SetPosition(hostages[i]->GetPosition()/* + hostages[i]->GetForward() * 45.0f/* + game->camera_.GetUp()*((float)-0.1)*/);
 				childlasers[i]->SetOrientation(hostages[i]->GetOrientation());
 			}
 		}
@@ -437,7 +477,7 @@ void Game::Update(GLFWwindow* window) {
 		}
 	}
 	if (game->input_m == true || game->input_m1 == true) {
-		CreateMissileInstance("missile", "SimpleCylinderMesh", "ObjectMaterial");
+		CreateMissileInstance("missile", "LaserMesh", "ObjectMaterial");
 	}
 	for (int i = 0; i < missiles.size(); i++) {
 		missiles[i]->SetPosition(missiles[i]->GetPosition() + glm::normalize(missiles[i]->direction));
@@ -765,9 +805,9 @@ void Game::SetupWorld() {
 	for (int i = 0; i < 300; i++) {
 		table[i] = (bool*)calloc(sizeof(bool), 300);
 	}
-	test = CreateInstance("test", "CubeMesh", "ToonRingMaterial", "Root");
+	//test = CreateInstance("test", "CubeMesh", "ToonRingMaterial", "Root");
 
-	test->SetPosition(glm::vec3(0.0, 0.0, 0.0));
+	//test->SetPosition(glm::vec3(0.0, 0.0, 0.0));
 
 	SceneNode* ground = CreateInstance("cubeg", "CubeMesh", "ToonRingMaterial", "Root");
 	ground->SetPosition(glm::vec3(0, -10, 0));
@@ -840,7 +880,7 @@ void Game::SetupWorld() {
 			spawnPoints.push_back(vertices[roofCorners]);
 
 		b->SetBoundingBox(vertices);
-		if (i < 60)
+		if (i < 0)
 			for (int a = 0; a < 8; a++) {
 				std::stringstream ss;
 				ss << i;
@@ -879,31 +919,49 @@ void Game::SetupEnemies() {
 		std::string index = ss.str();
 		std::string name = "StationaryEnemy" + index;
 
-		Enemy* bad_dude = CreateEnemyInstance(name, "CylinderMesh", "ObjectMaterial");
+		Enemy* bad_dude = CreateEnemyInstance(name, "LaserMesh", "ObjectMaterial", 0);
 
 		bad_dude->SetPosition(spawnPoints.at(location));
 		bad_dude->SetScale(glm::vec3(3.0, 3.0, 3.0));
+		std::vector<SceneNode *>::const_iterator bad_child = bad_dude->children_begin();
+		(*bad_child)->SetPosition(glm::vec3(0.0, 0.0, 0.0));
+		(*bad_child)->SetScale(glm::vec3(1.0, 1.0, 1.0));
+
 		spawnPoints.erase(spawnPoints.begin() + location);
 		scene_.GetNode("Root")->AddChild(bad_dude);
+		collidables.push_back(bad_dude);
+
 	}
 
 
 }
 
-Enemy* Game::CreateEnemyInstance(std::string entity_name, std::string object_name, std::string material_name) {
+Enemy* Game::CreateEnemyInstance(std::string entity_name, std::string object_name, std::string material_name, int enemyType) {
 
 	// Get resources
-	Resource *geom = resman_.GetResource(object_name);
-	if (!geom) {
-		throw(GameException(std::string("Could not find resource \"") + object_name + std::string("\"")));
-	}
+	if (enemyType == 0) {
+		Resource *geom = resman_.GetResource(object_name);
+		if (!geom) {
+			throw(GameException(std::string("Could not find resource \"") + object_name + std::string("\"")));
+		}
 
-	Resource *mat = resman_.GetResource(material_name);
-	if (!mat) {
-		throw(GameException(std::string("Could not find resource \"") + material_name + std::string("\"")));
+		Resource *mat = resman_.GetResource(material_name);
+		if (!mat) {
+			throw(GameException(std::string("Could not find resource \"") + material_name + std::string("\"")));
+		}
+		Resource* geom2 = resman_.GetResource("SimpleSphereMesh");
+		if (!geom2) {
+			throw(GameException(std::string("Could not find resource \"") + object_name + std::string("\"")));
+		}
+		Resource* mat2 = resman_.GetResource("ObjectMaterial");
+		if (!mat2) {
+			throw(GameException(std::string("Could not find resource \"") + material_name + std::string("\"")));
+		}
+		
+		Enemy* enemy_temp = new Enemy(entity_name, geom, mat, (SceneNode*)heli, &resman_);
+		enemy_temp->AddChild(new SceneNode(entity_name + "(Base)", geom2, mat2));
+		return enemy_temp;
 	}
-
-	return new Enemy(entity_name, geom, mat, (SceneNode*)heli, &resman_);
 
 }
 
@@ -939,7 +997,7 @@ void Game::checkForCollisions(GLFWwindow* window, bool laser) {
 	s = heli->GetPosition();//(lazerref->GetPosition() - (this->camera_.GetForward() * 45.0f));
 	//PrintVec3(heli->GetPosition());
 	//PrintVec3(camera_.GetPosition());
-	d = glm::normalize(lazerref->GetForward());
+	d = glm::normalize(heli->GetForward());
 	for (int j = 0; j < collidables.size(); j++) {
 		a = collidables[j]->GetPosition();
 
@@ -975,7 +1033,7 @@ void Game::checkForCollisions(GLFWwindow* window, bool laser) {
 				mp = missiles[z]->GetPosition();
 				ma = mp - collidables[j]->GetPosition();
 
-				if (((std::sqrt(std::pow(ma[0], 2) + std::pow(ma[1], 2) + std::pow(ma[2], 2))) <= 1.0)) {
+				if (((std::pow(ma[0], 2) + std::pow(ma[1], 2) + std::pow(ma[2], 2)) <= 1.0)) {
 					collidables[j]->SetVisible(false);
 				}
 				if (missiles.size() > 5) {
@@ -989,7 +1047,7 @@ void Game::checkForCollisions(GLFWwindow* window, bool laser) {
 						mp = childmissiles[i][k]->GetPosition();
 						ma = mp - collidables[j]->GetPosition();
 
-						if (((std::sqrt(std::pow(ma[0], 2) + std::pow(ma[1], 2) + std::pow(ma[2], 2))) <= 1.0)) {
+						if (((std::pow(ma[0], 2) + std::pow(ma[1], 2) + std::pow(ma[2], 2)) <= 1.0)) {
 							collidables[j]->SetVisible(false);
 						}
 						if (childmissiles[i].size() > 5) {
@@ -1010,10 +1068,8 @@ void Game::checkForCollisions(GLFWwindow* window, bool laser) {
 			if (((std::sqrt(std::pow(ha[0], 2) + std::pow(ha[1], 2) + std::pow(ha[2], 2))) <= 1.0)) {
 				hostcollected[j] = true;
 			}
-
 		}
 	}
-
 }
 
 
@@ -1046,7 +1102,6 @@ void Game::CreateLaserInstance(std::string entity_name, std::string object_name,
 		float off = 0.0;
 		childlasers.push_back(laser);
 	}
-	
 	
 }
 
@@ -1098,7 +1153,7 @@ void Game::CreateMissileInstance(std::string entity_name, std::string object_nam
 void Game::CreateAsteroidField(int num_asteroids){
 
     // Create a number of asteroid instances
-    for (int i = 0; i < num_asteroids; i++){
+    for (int i = 0; i < 0; i++){
         // Create instance name
         std::stringstream ss;
         ss << i;

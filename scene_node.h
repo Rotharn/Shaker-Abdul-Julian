@@ -33,14 +33,12 @@ namespace game {
 		glm::vec3 GetPosition(void) const;
 		glm::quat GetOrientation(void) const;
 		glm::vec3 GetScale(void) const;
-		glm::vec3 GetForward(void) const;
 
 		// Set node attributes
 		void SetPosition(glm::vec3 position);
 		void SetOrientation(glm::quat orientation);
 		void SetScale(glm::vec3 scale);
 		void SetMaterial(GLuint material);
-		void SetForward(glm::vec3 forward_);
 		void SetBoundingBox(glm::vec3* box);
 
 		// Perform transformations on node

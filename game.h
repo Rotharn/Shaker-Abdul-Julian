@@ -37,6 +37,7 @@ namespace game {
             ~Game();
             // Call Init() before calling any other method
             void Init(void); 
+			void InitInputs();
             // Set up resources for the game
             void SetupResources(void);
             // Set up initial scene
@@ -81,7 +82,7 @@ namespace game {
 			SceneNode* lazerref;
 			std::deque<SceneNode*> missiles;
 			std::deque<std::deque<SceneNode*>> childmissiles;
-			std::vector<SceneNode*> hostages;
+			std::vector<Helicopter*> hostages;
 			std::deque<SceneNode*> childlasers;
 			std::vector<bool> hostcollected;
 			std::vector<SceneNode *> collidables;
@@ -120,7 +121,10 @@ namespace game {
             // Asteroid field
             // Create instance of one asteroid
             Asteroid *CreateAsteroidInstance(std::string entity_name, std::string object_name, std::string material_name);
-			Enemy* CreateEnemyInstance(std::string entity_name, std::string object_namee, std::string material_name);
+			/*Enemy Types
+				type == 0 : Stationary				
+			*/
+			Enemy* CreateEnemyInstance(std::string entity_name, std::string object_namee, std::string material_name, int enemyType);
             // Create entire random asteroid field
             void CreateAsteroidField(int num_asteroids = 200);
 			void CreateLaserInstance(std::string entity_name, std::string object_name, std::string material_name);
