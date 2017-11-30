@@ -47,7 +47,7 @@ void Game::Init(void){
 	struct tm * timeinfo;
 	time(&theLocalTime);
 	timeinfo = localtime(&theLocalTime);
-	srand(timeinfo->tm_hour + timeinfo->tm_min + timeinfo->tm_sec);
+	srand(timeinfo->tm_hour * 60 * 60 + timeinfo->tm_min * 60 + timeinfo->tm_sec);
 
     // Set variables
     animating_ = true;
@@ -208,7 +208,7 @@ void Game::SetupScene(void){
 	CreateLaserInstance("laser", "LaserMesh", "ObjectMaterial");
 
 
-	camera_position_g = glm::vec3(0.0, -offsety, -offsetx);
+	camera_position_g = glm::vec3(heli->GetPosition().x, heli->GetPosition().y - offsety, heli->GetPosition().z - offsetx);
 	camera_.SetView(camera_position_g, heli->GetPosition(), camera_up_g);
 
 }
@@ -230,13 +230,15 @@ void Game::MainLoop(void){
                 last_time = current_time;
             }
         }
+		if (glm::length(positions.front() - heli->GetPosition()) > 0.3) {
+			positions.push_front(heli->GetPosition());
 
-		positions.push_front(heli->GetPosition());
-		positions.pop_back();
-		for (int i = 0; i < hostages.size(); i++) {
-			if (hostcollected[i]) {
-				hostages[i]->SetPosition(positions[(i+1)*5]);
-				hostages[i]->SetOrientation(heli->GetOrientation());
+			positions.pop_back();
+			for (int i = 0; i < hostages.size(); i++) {
+				if (hostcollected[i]) {
+					hostages[i]->SetPosition(positions[(i + 1) * 5]);
+					hostages[i]->SetOrientation(heli->GetOrientation());
+				}
 			}
 		}
 		
@@ -414,24 +416,24 @@ void Game::Update(GLFWwindow* window) {
 		, game->camera_.GetForward().z * ship_velocity[2] + game->camera_.GetSide().z * ship_velocity[0] + game->camera_.GetUp().z *ship_velocity[1]);
 
 	glm::vec3* pos = &game->camera_.GetPosition();
-	if (pos->z < -50) {
-		game->camera_.SetPosition(glm::vec3(pos->x, pos->y, -50));
+	if (pos->z < 0) {
+		game->camera_.SetPosition(glm::vec3(pos->x, pos->y, 0));
 		ship_velocity[2] = 0;
 	}
-	if (pos->z > 650) {
-		game->camera_.SetPosition(glm::vec3(pos->x, pos->y, 650));
+	if (pos->z > 1200) {
+		game->camera_.SetPosition(glm::vec3(pos->x, pos->y, 1200));
 		ship_velocity[2] = 0;
 	}
-	if (pos->x > 350) {
-		game->camera_.SetPosition(glm::vec3(350, pos->y, pos->z));
+	if (pos->x > 1200) {
+		game->camera_.SetPosition(glm::vec3(1200, pos->y, pos->z));
 		ship_velocity[0] = 0;
 	}
-	if (pos->x < -350) {
-		game->camera_.SetPosition(glm::vec3(-350, pos->y, pos->z));
+	if (pos->x < 0) {
+		game->camera_.SetPosition(glm::vec3(0, pos->y, pos->z));
 		ship_velocity[0] = 0;
 	}
-	if (pos->y < -350 ) {
-		game->camera_.SetPosition(glm::vec3(pos->x, -350, pos->z));
+	if (pos->y < 0 ) {
+		game->camera_.SetPosition(glm::vec3(pos->x, -0, pos->z));
 		ship_velocity[1] = 0;
 	}
 	if (pos->y > 350) {
@@ -490,6 +492,7 @@ void Game::Update(GLFWwindow* window) {
 	}
 	cameraNode->SetOrientation(game->camera_.GetOrientation());
 	cameraNode->SetPosition(game->camera_.GetPosition());
+	PrintVec3(heli->GetPosition());
 	checkForCollisions(window, false);
 }
 
@@ -516,7 +519,7 @@ void Game::ScrollWheelCallback(GLFWwindow* window, double xoffset, double yoffse
 	game->camera_.Translate((game->camera_.GetForward() * game->offsetx) - (game->camera_.GetUp() * game->offsety));
 
 	game->camera_.Rotate(glm::angleAxis(-0.05f * (float)yoffset, game->camera_.GetSide()));
-	game->PrintVec3(game->camera_.GetForward());
+	//game->PrintVec3(game->camera_.GetForward());
 
 	game->camera_.Translate((game->camera_.GetForward() * (game->offsetx * -1.0f)) - (game->camera_.GetUp() * game->offsety) * -1.0f);
 
@@ -730,7 +733,7 @@ void Game::SetupHelicopter(void) {
 void Game::SetupHelicopterOld(void) {
 
 	heli = CreateHeliInstance("heli", "CubeMesh", "ToonHeliMaterial", "Root");
-	heli->SetPosition(glm::vec3(0.0, 0.0, 0.0));
+	heli->SetPosition(glm::vec3(600.0, 0.0, 0.0));
 	body2 = CreateInstance("body2", "CubeMesh", "ToonHeliMaterial", "heli");
 
 	rotor1 = CreateInstance("rotor1", "CylinderMesh", "ToonHeliMaterial", "body2");
@@ -801,26 +804,27 @@ void Game::SetupHostage(std::string name) {
 }
 
 void Game::SetupWorld() {
-	bool** table = (bool**)calloc(sizeof(bool*), 300);
-	for (int i = 0; i < 300; i++) {
-		table[i] = (bool*)calloc(sizeof(bool), 300);
+	int sizeOfBuildingArea = 1200;
+	bool** table = (bool**)calloc(sizeof(bool*), sizeOfBuildingArea);
+	for (int i = 0; i < sizeOfBuildingArea; i++) {
+		table[i] = (bool*)calloc(sizeof(bool), sizeOfBuildingArea);
 	}
 	//test = CreateInstance("test", "CubeMesh", "ToonRingMaterial", "Root");
 
 	//test->SetPosition(glm::vec3(0.0, 0.0, 0.0));
 
 	SceneNode* ground = CreateInstance("cubeg", "CubeMesh", "ToonRingMaterial", "Root");
-	ground->SetPosition(glm::vec3(0, -10, 0));
+	ground->SetPosition(glm::vec3(600, -5, 600));
 	ground->Scale(glm::vec3(1200, 10, 1200));
 	SceneNode* b;
 	std::stack<bool *> occupiedArea;
 	glm::vec3* vertices;
 	glm::vec3 scaleFactor;
-	for (int i = 0; i < 60; i++) {
+	for (int i = 0; i < sizeOfBuildingArea / 5; i++) {
 		b = CreateInstance("EnvironmentCube" + std::to_string(i), "CubeMesh", "ToonRingMaterial", "Root");
 		scaleFactor = glm::vec3((float)(4.0 + ((float)(rand() % 20))), (float)(4.0 + ((float)(rand() % 20))), (float)(4.0 + ((float)(rand() % 20))));
 		float factor = (float)(1.0 + ((float)(rand() % 20)));
-		b->SetPosition(glm::vec3((float)(rand() % 300), -5.0 + scaleFactor.y / 2.0f, (float)(rand() % 300)));
+		b->SetPosition(glm::vec3((float)(rand() % 1200), scaleFactor.y / 2.0f, (float)(rand() % 1200)));
 		bool check = false;
 		int patience = 0;
 		bool yes = true;
@@ -847,7 +851,7 @@ void Game::SetupWorld() {
 				}
 				else
 					patience++;
-				b->SetPosition(glm::vec3((float)(rand() % 300), -5.0 + scaleFactor.y / 2.0f, (float)(rand() % 300)));
+				b->SetPosition(glm::vec3((float)(rand() % 300), scaleFactor.y / 2.0f, (float)(rand() % 300)));
 				check = false;
 			}
 			else
