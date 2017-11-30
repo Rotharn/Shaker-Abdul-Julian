@@ -17,7 +17,7 @@ out vec3 normal_interp;
 out vec3 light_pos;
 
 // Material attributes (constants)
-vec3 light_position = vec3(-0.5, -0.5, 1.5);
+vec3 light_position = vec3(600.5, 300.5, 600.5);
 
 
 void main()

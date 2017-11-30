@@ -813,7 +813,7 @@ void Game::SetupWorld() {
 
 	//test->SetPosition(glm::vec3(0.0, 0.0, 0.0));
 
-	SceneNode* ground = CreateInstance("cubeg", "CubeMesh", "ToonRingMaterial", "Root");
+	SceneNode* ground = CreateInstance("cubeg", "CubeMesh", "ShinyBlueMaterial", "Root");
 	ground->SetPosition(glm::vec3(600, -5, 600));
 	ground->Scale(glm::vec3(1200, 10, 1200));
 	SceneNode* b;
@@ -821,7 +821,7 @@ void Game::SetupWorld() {
 	glm::vec3* vertices;
 	glm::vec3 scaleFactor;
 	for (int i = 0; i < sizeOfBuildingArea / 5; i++) {
-		b = CreateInstance("EnvironmentCube" + std::to_string(i), "CubeMesh", "ToonRingMaterial", "Root");
+		b = CreateInstance("EnvironmentCube" + std::to_string(i), "CubeMesh", "ShinyBlueMaterial", "Root");
 		scaleFactor = glm::vec3((float)(4.0 + ((float)(rand() % 20))), (float)(4.0 + ((float)(rand() % 20))), (float)(4.0 + ((float)(rand() % 20))));
 		float factor = (float)(1.0 + ((float)(rand() % 20)));
 		b->SetPosition(glm::vec3((float)(rand() % 1200), scaleFactor.y / 2.0f, (float)(rand() % 1200)));
@@ -833,7 +833,7 @@ void Game::SetupWorld() {
 				for (int j = 0 - (int)(scaleFactor.z / 2.0f); j < (int)scaleFactor.z; j++) {
 					int x = (int)b->GetPosition().x + k;
 					int z = (int)b->GetPosition().z + j;
-					if (x < 300 && z < 300 && x >= 0 && z >= 0)
+					if (x < 1200 && z < 1200 && x >= 0 && z >= 0)
 						if (table[x][z] == true)
 							check = true;
 						else

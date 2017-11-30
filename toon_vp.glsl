@@ -1,5 +1,5 @@
 #version 130
-uniform vec3 lightDir;
+//uniform vec3 lightDir;
 varying float intensity;
 // Vertex buffer
 in vec3 vertex;

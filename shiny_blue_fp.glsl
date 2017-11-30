@@ -6,7 +6,7 @@ in vec3 normal_interp;
 in vec3 light_pos;
 
 // Material attributes (constants)
-vec4 ambient_color = vec4(0.0, 0.0, 0.1, 1.0);
+vec4 ambient_color = vec4(0.1, 0.1, 0.2, 1.0);
 vec4 diffuse_color = vec4(0.0, 0.0, 0.5, 1.0);
 vec4 specular_color = vec4(0.8, 0.5, 0.9, 1.0);
 float phong_exponent = 128.0;
