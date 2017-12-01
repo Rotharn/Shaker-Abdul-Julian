@@ -9,13 +9,15 @@ namespace game{
 		
 		this->type = STATIONARY;
 		this->damage = 1.0;
-
+		shoottime = 0.0;
 
 		this->time = glfwGetTime();
 		this->player = player;
 		this->enemyResMan = resman;
 		//this->SetScale(glm::vec3(0.01, 0.01, 0.01));
 		incrementingFloat = 0.0;
+		hasShot = false;
+		agro = false;
 	}
 
 	Enemy::~Enemy() {
@@ -24,36 +26,39 @@ namespace game{
 
 
 	void Enemy::Update() {
-		float dtime = time - glfwGetTime();
-		dtime += (2.0 + (float) (rand() % 5)) / 10.0f;
-		if (type == STATIONARY) {
-			
-			glm::vec3 zax = glm::normalize(player->GetPosition() - this->position_);
-			glm::vec3 xax = glm::normalize(glm::cross(this->GetUp(), zax));
-			glm::vec3 yax = glm::cross(zax, xax);
-			glm::mat3 aax = glm::mat3(xax, yax, zax);
-			SetOrientation(glm::quat(aax));
-			//SetOrientation(glm::normalize(glm::angleAxis(glm::normalize(1.0f * glm::dot(this->position_, this->position_ - player->GetPosition())), glm::normalize(glm::cross(this->GetPosition(), this->position_ - player->GetPosition())))));
-			
-			
-			
-			incrementingFloat += 0.01;
-			if (dtime > 2.0) {
-				time = glfwGetTime();
-				Shoot();
+		if (agro) {
+			float dtime = glfwGetTime() - time;
+			time = glfwGetTime();
+			shoottime += dtime;
+			dtime += (2.0 + (float)(rand() % 5)) / 10.0f;
+			if (type == STATIONARY) {
+
+				glm::vec3 zax = glm::normalize(player->GetPosition() - this->position_);
+				glm::vec3 xax = glm::normalize(glm::cross(this->GetUp(), zax));
+				glm::vec3 yax = glm::cross(zax, xax);
+				glm::mat3 aax = glm::mat3(xax, yax, zax);
+				SetOrientation(glm::quat(aax));
+				//SetOrientation(glm::normalize(glm::angleAxis(glm::normalize(1.0f * glm::dot(this->position_, this->position_ - player->GetPosition())), glm::normalize(glm::cross(this->GetPosition(), this->position_ - player->GetPosition())))));
+
+				incrementingFloat += 0.01;
+				if (shoottime > 4.0) {
+					shoottime = 0;
+					time = glfwGetTime();
+					hasShot = true;
+				}
 			}
 		}
 
-
 	}
 
-	void Enemy::Shoot() {
-
-		if (type == STATIONARY) {
-
-			this->children_.push_back(CreateMissileInstance("missile", "SimpleCylinderMesh", "ObjectMaterial"));
-
+	bool Enemy::Shoot() {
+		bool shooting = hasShot;
+		if(hasShot){
+			std::cout << "FIRE!";
+			hasShot = !hasShot;
 		}
+		return shooting;
+			
 
 	}
 	SceneNode* Enemy::CreateMissileInstance(std::string entity_name, std::string object_name, std::string material_name) {
@@ -77,6 +82,8 @@ namespace game{
 		missile->SetPosition(this->GetPosition());
 		missile->SetOrientation(GetOrientation());
 		missile->direction = this->GetForward();
+
+		return missile;
 	}
 	
 	void Enemy::AttackCollisions() {
@@ -127,6 +134,10 @@ namespace game{
 		//glm::quat rotation = glm::angleAxis(angle, GetUp());
 		glm::quat rotation = glm::angleAxis(angle, glm::vec3(0.0, 1.0, 0.0));
 		orientation_ = rotation * orientation_;
+	}
+
+	void Enemy::SetAgro(bool agro_) {
+		agro = agro_;
 	}
 
 

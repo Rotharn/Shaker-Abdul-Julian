@@ -48,6 +48,7 @@ namespace game {
 			void Update(GLFWwindow*);
 
 			void CreateMissileInstance(std::string, std::string, std::string);
+			void CreateEnemyMissile(std::string entity_name, std::string object_name, std::string material_name, Enemy* enemy);
 
 			void checkForCollisions(GLFWwindow* window, bool laser);
 
@@ -87,6 +88,7 @@ namespace game {
 			std::vector<bool> hostcollected;
 			std::vector<SceneNode *> collidables;
 			std::vector<Enemy*> enemies;
+			std::vector<SceneNode*> enemymissiles;
 			std::vector<glm::vec3> spawnPoints;
 
 			bool input_up, input_down, input_left, input_right, input_s, input_x, input_a, input_z, input_e, input_q,

@@ -29,13 +29,15 @@ namespace game {
 		void Pitch(float angle);
 		void Yaw(float angle);
 		void Roll(float angle);
+		bool Shoot();
+		void SetAgro(bool agro);
 
 
 
 	protected:
 		
 		void Update();
-		void Shoot();
+		
 		SceneNode* CreateMissileInstance(std::string entity_name, std::string object_name, std::string material_name);
 		
 		enum enemy_type {
@@ -46,7 +48,10 @@ namespace game {
 		int type;
 		float damage;
 		float time;
+		float shoottime;
 		float incrementingFloat;
+		bool hasShot;
+		bool agro;
 		SceneNode* player;
 		//glm::vec3 playerpos;
 

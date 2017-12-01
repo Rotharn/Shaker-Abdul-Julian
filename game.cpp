@@ -484,12 +484,26 @@ void Game::Update(GLFWwindow* window) {
 	for (int i = 0; i < missiles.size(); i++) {
 		missiles[i]->SetPosition(missiles[i]->GetPosition() + glm::normalize(missiles[i]->direction));
 	}
+	for (int i = 0; i < enemymissiles.size(); i++) {
+		if (enemymissiles[i]->GetPosition().x < 0 || enemymissiles[i]->GetPosition().z < 0 || enemymissiles[i]->GetPosition().x > 1200 || enemymissiles[i]->GetPosition().z > 1200 || enemymissiles[i]->GetPosition().y > 350 || enemymissiles[i]->GetPosition().y < 0)
+			enemymissiles[i]->SetVisible(false);
+		else
+			enemymissiles[i]->SetPosition(enemymissiles[i]->GetPosition() + glm::normalize(enemymissiles[i]->direction)*3.0f);
+	}
 	for (int i = 0; i < childmissiles.size(); i++) {
 		if (hostcollected[i]) {
 			for (int j = 0; j < childmissiles[i].size(); j++)
 				childmissiles[i][j]->SetPosition(childmissiles[i][j]->GetPosition() + glm::normalize(childmissiles[i][j]->direction));
 		}
 	}
+
+	for (int i = 0; i < enemies.size(); ++i) {
+		if (enemies[i]->Shoot()) {
+			CreateEnemyMissile("missile", "LaserMesh", "ObjectMaterial", enemies[i]);
+		}
+	}
+
+
 	cameraNode->SetOrientation(game->camera_.GetOrientation());
 	cameraNode->SetPosition(game->camera_.GetPosition());
 	PrintVec3(heli->GetPosition());
@@ -911,11 +925,11 @@ void Game::SetupWorld() {
 }
 
 void Game::SetupEnemies() {
-	float enemies = 30;
-	while (enemies > spawnPoints.size())
-		enemies = enemies / 2;
+	float num = 30;
+	while (num > spawnPoints.size())
+		num = num / 2;
 	
-	for (int i = 0; i < enemies; i++) {
+	for (int i = 0; i < num; i++) {
 		int location = rand() % spawnPoints.size();
 
 		std::stringstream ss;
@@ -933,7 +947,7 @@ void Game::SetupEnemies() {
 
 		spawnPoints.erase(spawnPoints.begin() + location);
 		scene_.GetNode("Root")->AddChild(bad_dude);
-		collidables.push_back(bad_dude);
+		enemies.push_back(bad_dude);
 
 	}
 
@@ -1074,6 +1088,16 @@ void Game::checkForCollisions(GLFWwindow* window, bool laser) {
 			}
 		}
 	}
+
+	for (int j = 0; j < enemies.size(); j++) {
+		if (glm::length(enemies[j]->GetPosition() - heli->GetPosition()) <= 200.0f) {
+			enemies[j]->SetAgro(true);
+		}
+		else {
+			enemies[j]->SetAgro(false);
+		}
+
+	}
 }
 
 
@@ -1152,6 +1176,35 @@ void Game::CreateMissileInstance(std::string entity_name, std::string object_nam
 		}
 	}
 	
+}
+
+void Game::CreateEnemyMissile(std::string entity_name, std::string object_name, std::string material_name, Enemy* enemy) {
+	std::cout << "\nFIRE!";
+	// Get resources
+	Resource *geom = resman_.GetResource(object_name);
+	if (!geom) {
+		throw(GameException(std::string("Could not find resource \"") + object_name + std::string("\"")));
+	}
+
+	Resource *mat = resman_.GetResource(material_name);
+	if (!mat) {
+		throw(GameException(std::string("Could not find resource \"") + material_name + std::string("\"")));
+	}
+
+
+	// Create Missile instance
+	SceneNode *missile = new SceneNode(entity_name, geom, mat);
+
+	missile->SetVisible(true);
+	//missile->Scale(glm::vec3(10.0));
+	missile->SetPosition(enemy->GetPosition());
+	missile->SetOrientation(enemy->GetOrientation());
+
+	scene_.GetNode("Root")->AddChild(missile);
+	float off = 0.0;
+	missile->direction = enemy->GetForward();
+	enemymissiles.push_back(missile);
+
 }
 
 void Game::CreateAsteroidField(int num_asteroids){
