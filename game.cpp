@@ -411,9 +411,9 @@ void Game::Update(GLFWwindow* window) {
 	game->camera_.Translate(-game->heli->GetSide()*trans_factor*ship_velocity[0] * -1.0f);
 	game->camera_.Translate(glm::vec3(0.0, 1.0, 0.0)*trans_factor*ship_velocity[1]);
 
-	glm::vec3 mov = glm::vec3(game->camera_.GetForward().x * ship_velocity[2] + game->camera_.GetSide().x * ship_velocity[0] + game->camera_.GetUp().x *ship_velocity[1]
-		, game->camera_.GetForward().y * ship_velocity[2] + game->camera_.GetSide().y * ship_velocity[0] + game->camera_.GetUp().y *ship_velocity[1]
-		, game->camera_.GetForward().z * ship_velocity[2] + game->camera_.GetSide().z * ship_velocity[0] + game->camera_.GetUp().z *ship_velocity[1]);
+	//glm::vec3 mov = glm::vec3(game->camera_.GetForward().x * ship_velocity[2] + game->camera_.GetSide().x * ship_velocity[0] + game->camera_.GetUp().x *ship_velocity[1]
+		//, game->camera_.GetForward().y * ship_velocity[2] + game->camera_.GetSide().y * ship_velocity[0] + game->camera_.GetUp().y *ship_velocity[1]
+		//, game->camera_.GetForward().z * ship_velocity[2] + game->camera_.GetSide().z * ship_velocity[0] + game->camera_.GetUp().z *ship_velocity[1]);
 
 	glm::vec3* pos = &game->camera_.GetPosition();
 	if (pos->z < 0) {
@@ -482,6 +482,9 @@ void Game::Update(GLFWwindow* window) {
 		CreateMissileInstance("missile", "LaserMesh", "ObjectMaterial");
 	}
 	for (int i = 0; i < missiles.size(); i++) {
+		if (missiles[i]->GetPosition().x < 0 || missiles[i]->GetPosition().z < 0 || missiles[i]->GetPosition().x > 1200 || missiles[i]->GetPosition().z > 1200 || missiles[i]->GetPosition().y > 350 || missiles[i]->GetPosition().y < 0)
+			missiles[i]->SetVisible(false);
+		else
 		missiles[i]->SetPosition(missiles[i]->GetPosition() + glm::normalize(missiles[i]->direction));
 	}
 	for (int i = 0; i < enemymissiles.size(); i++) {
@@ -499,7 +502,7 @@ void Game::Update(GLFWwindow* window) {
 
 	for (int i = 0; i < enemies.size(); ++i) {
 		if (enemies[i]->Shoot()) {
-			CreateEnemyMissile("missile", "LaserMesh", "ObjectMaterial", enemies[i]);
+			CreateEnemyMissile("enemymissile", "LaserMesh", "ObjectMaterial", enemies[i]);
 		}
 	}
 
@@ -915,6 +918,7 @@ void Game::SetupWorld() {
 				*/
 				scene_.GetNode("Root")->AddChild(sphere);
 			}
+		buildings.push_back(b);
 	}
 	for (int i = 0; i < 300; i++)
 		delete(table[i]);
@@ -1010,8 +1014,6 @@ void Game::checkForCollisions(GLFWwindow* window, bool laser) {
 	glm::vec3 a, c, f, l, ma, mp, d, s, hp, ha;
 	float t;
 
-
-
 	s = heli->GetPosition();//(lazerref->GetPosition() - (this->camera_.GetForward() * 45.0f));
 	//PrintVec3(heli->GetPosition());
 	//PrintVec3(camera_.GetPosition());
@@ -1088,7 +1090,6 @@ void Game::checkForCollisions(GLFWwindow* window, bool laser) {
 			}
 		}
 	}
-
 	for (int j = 0; j < enemies.size(); j++) {
 		if (glm::length(enemies[j]->GetPosition() - heli->GetPosition()) <= 200.0f) {
 			enemies[j]->SetAgro(true);
@@ -1097,6 +1098,10 @@ void Game::checkForCollisions(GLFWwindow* window, bool laser) {
 			enemies[j]->SetAgro(false);
 		}
 
+	}
+
+	for (int j = 0; j < buildings.size(); j++) {
+		//insert sphere+boundingbox collision here
 	}
 }
 

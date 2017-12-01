@@ -74,6 +74,16 @@ namespace game {
 		std::vector<SceneNode *>::const_iterator children_end() const;
 
 		glm::vec3 direction;
+
+		/*
+		[0] - [3] Top Four Vertices
+		[4] - [7] Bottom Four Vertices
+		Order: 0 -> 1 -> 2 -> 3
+		4 -> 5 -> 6 -> 7
+		With 4 directly below 0 and so on.
+		*/
+		glm::vec3* boundingBox;
+		// Hierarchy
 	protected:
 		std::string name_; // Name of the scene node
 		GLuint array_buffer_; // References to geometry: vertex and array buffers
@@ -89,15 +99,7 @@ namespace game {
 		bool hit;
 		float hitDmg;
 		glm::quat angm_;
-		/*
-			[0] - [3] Top Four Vertices
-			[4] - [7] Bottom Four Vertices
-			Order: 0 -> 1 -> 2 -> 3 
-				   4 -> 5 -> 6 -> 7
-			With 4 directly below 0 and so on.
-		*/
-		glm::vec3* boundingBox;
-						  // Hierarchy
+		
 		SceneNode *parent_;
 		std::vector<SceneNode *> children_;
 

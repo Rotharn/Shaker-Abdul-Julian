@@ -90,6 +90,7 @@ namespace game {
 			std::vector<Enemy*> enemies;
 			std::vector<SceneNode*> enemymissiles;
 			std::vector<glm::vec3> spawnPoints;
+			std::vector<SceneNode *> buildings;
 
 			bool input_up, input_down, input_left, input_right, input_s, input_x, input_a, input_z, input_e, input_q,
 				 input_j, input_l, input_i, input_k, input_c, input_m, input_t, input_w, input_d, input_b, input_space, input_shift,

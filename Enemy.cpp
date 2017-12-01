@@ -41,7 +41,7 @@ namespace game{
 				//SetOrientation(glm::normalize(glm::angleAxis(glm::normalize(1.0f * glm::dot(this->position_, this->position_ - player->GetPosition())), glm::normalize(glm::cross(this->GetPosition(), this->position_ - player->GetPosition())))));
 
 				incrementingFloat += 0.01;
-				if (shoottime > 4.0) {
+				if (shoottime > 2.0) {
 					shoottime = 0;
 					time = glfwGetTime();
 					hasShot = true;
