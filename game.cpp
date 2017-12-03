@@ -126,6 +126,7 @@ void Game::SetupResources(void){
 	resman_.CreateCylinder("CylinderMesh",0.0f, 0.2f,3,10,-1);
 	resman_.CreateCylinder("LaserMesh", 0.0f, 0.2f, 3, 5, 0);
 	resman_.CreateCube("CubeMesh");
+	resman_.CreateMissileParticles("MissileParticles");
 
     // Load material to be applied to asteroids
     std::string filename = std::string(MATERIAL_DIRECTORY) + std::string("/material");
@@ -140,16 +141,26 @@ void Game::SetupResources(void){
 	filename = std::string(MATERIAL_DIRECTORY) + std::string("/toon_heli");
 	resman_.LoadResource(Material, "ToonHeliMaterial", filename.c_str());
 
+	filename = std::string(MATERIAL_DIRECTORY) + std::string("/texture");
+	resman_.LoadResource(Material, "textureMaterial", filename.c_str());
+
+	filename = std::string(MATERIAL_DIRECTORY) + std::string("/camo_cloth_woodland_2048.png");
+	resman_.LoadResource(Texture, "Camo", filename.c_str());
+
 	filename = std::string(MATERIAL_DIRECTORY) + std::string("/helicoptero_1.1.obj");
 	resman_.LoadResource(Mesh, "HeliBodyMesh", filename.c_str());
 
-	filename = std::string(MATERIAL_DIRECTORY) + std::string("/helicoptero_1.22.obj");
-	resman_.LoadResource(Mesh, "HeliRotorMesh", filename.c_str());
+	filename = std::string(MATERIAL_DIRECTORY) + std::string("/helicoptero_1.2.obj");
+	resman_.LoadResource(Mesh, "HeliStockRotorMesh", filename.c_str());
 
-	filename = std::string(MATERIAL_DIRECTORY) + std::string("/helicoptero_1.3.obj");
+	filename = std::string(MATERIAL_DIRECTORY) + std::string("/helicoptertailrotor.obj");
 	resman_.LoadResource(Mesh, "HeliTailRotorMesh", filename.c_str());
-
-
+	
+	filename = std::string(MATERIAL_DIRECTORY) + std::string("/missile");
+	resman_.LoadResource(Material, "MissileMaterial", filename.c_str());
+	
+	// Create particles for explosion
+	
 }
 void Game::InitInputs() {
 
@@ -192,8 +203,9 @@ void Game::SetupScene(void){
 	root->SetPosition(glm::vec3(0.0, 0.0, 0.0));
 	scene_.SetRoot(root);
 	root->AddChild(cameraNode);
-	SetupHelicopterOld();
-	heli->Rotate(glm::angleAxis(3.14159f, glm::vec3(0.0, 1.0, 0.0)));
+	//SetupHelicopterOld();
+	SetupHelicopter();
+	//heli->Rotate(glm::angleAxis(3.14159f, glm::vec3(0.0, 1.0, 0.0)));
 	SetupWorld();
 	SetupEnemies();
 	positions = std::deque<glm::vec3>(25,heli->GetPosition());
@@ -313,40 +325,40 @@ void Game::Update(GLFWwindow* window) {
 			game->ship_rotation[1] += 0.02;
 	}
 
-	if (game->input_w == true && game->ship_velocity[2] < 5.0f) {
+	if (game->input_s == true && game->ship_velocity[2] < 5.0f) {
 		game->ship_velocity[2] += 0.02f;
 	}
-	if (game->input_w == false && game->ship_velocity[2] > 0.0f) {
+	if (game->input_s == false && game->ship_velocity[2] > 0.0f) {
 		if (game->ship_velocity[2] < 0.02f)
 			game->ship_velocity[2] = 0.0;
 		else
 			game->ship_velocity[2] -= 0.02f;
 	}
 
-	if (game->input_s == true && game->ship_velocity[2] > -5.0f) {
+	if (game->input_w == true && game->ship_velocity[2] > -5.0f) {
 		game->ship_velocity[2] -= 0.05;
 	}
-	if (game->input_s == false && game->ship_velocity[2] < 0.0f) {
+	if (game->input_w == false && game->ship_velocity[2] < 0.0f) {
 		if (game->ship_velocity[2] > -0.02f)
 			game->ship_velocity[2] = 0.0;
 		else
 			game->ship_velocity[2] += 0.02;
 	}
 
-	if (game->input_a == true && game->ship_velocity[0] < 5.0f) {
+	if (game->input_d == true && game->ship_velocity[0] < 5.0f) {
 		game->ship_velocity[0] += 0.05;
 	}
-	if (game->input_a == false && game->ship_velocity[0] > 0.0f) {
+	if (game->input_d == false && game->ship_velocity[0] > 0.0f) {
 		if (game->ship_velocity[0] < 0.02f)
 			game->ship_velocity[0] = 0.0;
 		else
 			game->ship_velocity[0] -= 0.02;
 	}
 
-	if (game->input_d == true && game->ship_velocity[0] > -5.0f) {
+	if (game->input_a == true && game->ship_velocity[0] > -5.0f) {
 		game->ship_velocity[0] -= 0.05;
 	}
-	if (game->input_d == false && game->ship_velocity[0] < 0.0f) {
+	if (game->input_a == false && game->ship_velocity[0] < 0.0f) {
 		if (game->ship_velocity[0] > -0.02f)
 			game->ship_velocity[0] = 0.0;
 		else
@@ -461,8 +473,8 @@ void Game::Update(GLFWwindow* window) {
 
 	if (game->input_c == true || game->input_m2 == true) {
 		lazerref->SetVisible(true);
-		lazerref->SetPosition(this->heli->GetPosition()/* + this->heli->GetForward() /* -45.0f/* + game->camera_.GetUp()*((float)-0.1)*/); 
-		lazerref->SetOrientation(this->heli->GetOrientation());
+		lazerref->SetPosition(this->heli->GetPosition()/* + this->heli->GetForward() /* -45.0f/* + game->camera_.GetUp()*((float)-0.1)*/);
+		lazerref->SetOrientation(-this->heli->GetOrientation());
 		for (int i = 0; i < childlasers.size(); ++i) {
 			if (hostcollected[i]) {
 				childlasers[i]->SetVisible(true);
@@ -485,7 +497,7 @@ void Game::Update(GLFWwindow* window) {
 		if (missiles[i]->GetPosition().x < 0 || missiles[i]->GetPosition().z < 0 || missiles[i]->GetPosition().x > 1200 || missiles[i]->GetPosition().z > 1200 || missiles[i]->GetPosition().y > 350 || missiles[i]->GetPosition().y < 0)
 			missiles[i]->SetVisible(false);
 		else
-		missiles[i]->SetPosition(missiles[i]->GetPosition() + glm::normalize(missiles[i]->direction));
+		missiles[i]->SetPosition(missiles[i]->GetPosition() + glm::normalize(missiles[i]->direction) * 5.0f);
 	}
 	for (int i = 0; i < enemymissiles.size(); i++) {
 		if (enemymissiles[i]->GetPosition().x < 0 || enemymissiles[i]->GetPosition().z < 0 || enemymissiles[i]->GetPosition().x > 1200 || enemymissiles[i]->GetPosition().z > 1200 || enemymissiles[i]->GetPosition().y > 350 || enemymissiles[i]->GetPosition().y < 0)
@@ -496,7 +508,7 @@ void Game::Update(GLFWwindow* window) {
 	for (int i = 0; i < childmissiles.size(); i++) {
 		if (hostcollected[i]) {
 			for (int j = 0; j < childmissiles[i].size(); j++)
-				childmissiles[i][j]->SetPosition(childmissiles[i][j]->GetPosition() + glm::normalize(childmissiles[i][j]->direction));
+				childmissiles[i][j]->SetPosition(childmissiles[i][j]->GetPosition() + glm::normalize(childmissiles[i][j]->direction) * 5.0f);
 		}
 	}
 
@@ -716,34 +728,19 @@ Game::~Game(){
 
 
 void Game::SetupHelicopter(void) {
-
-	heli = (Helicopter *)CreateInstance("heli", "HeliBodyMesh", "ToonHeliMaterial", "Root");
-	//body2 = CreateInstance("body2", "CubeMesh", "ToonHeliMaterial", "heli");
-
-	rotor1 = CreateInstance("rotor1", "CylinderMesh", "ToonHeliMaterial", "heli");
-	rotor2 = CreateInstance("rotor2", "HeliRotorMesh", "ToonHeliMaterial", "rotor1");
-	//tail = CreateInstance("tail", "CylinderMesh", "ToonHeliMaterial", "heli");
-	rotor3 = CreateInstance("rotor3", "CylinderMesh", "ToonHeliMaterial", "heli");
-	heli->Rotate(glm::angleAxis((float)90.0, glm::vec3(0.0, 1.0, 0.0)));
-	heli->Translate(glm::vec3(0.0, 0.0, 0.0));
-	//body2->Translate(glm::vec3(0.0, 0.3, -0.25));
-	//heli->Scale(glm::vec3(1.0, 0.4, 3.5));
-	//body2->Scale(glm::vec3(1.0, 0.3, 3.0));
+	heli = (Helicopter *)CreateTexturedHeliInstance("heli", "CubeMesh", "textureMaterial", "Root", "Camo");
+	heli->Scale(glm::vec3(0.1,0.1,0.1));
+	body = (Helicopter *)CreateTexturedInstance("body", "HeliBodyMesh", "textureMaterial", "heli", "Camo");
+	body->Rotate(glm::angleAxis(3.14159f, glm::vec3(0.0, 1.0, 0.0)));
+	rotorStock = CreateTexturedInstance("rotorStock", "HeliStockRotorMesh", "textureMaterial", "body", "Camo");
+	rotorStock->Translate(glm::vec3(0.0, 1.1, 0.0));
+	rotor2 = CreateInstance("rotor2", "CylinderMesh", "ShinyBlueMaterial", "rotorStock");
+	rotor3 = CreateInstance("rotor3", "HeliTailRotorMesh", "ShinyBlueMaterial", "body");
 	glm::quat rotation = glm::angleAxis((float)4.709, glm::vec3(1.0, 0.0, 0.0));
-	//rotor1->SetOrientation(rotation);
-	rotor1->Translate(glm::vec3(0.0, 0.4 - 0.175, 0.0));
-	//rotor1->Scale(glm::vec3(1.0, 1.0, 0.1));
 	rotation = glm::angleAxis(3.3f, glm::vec3(0.0, 1.0, 0.0));
-	//rotor2->Translate(glm::vec3(0.0, 0.0, 0.1));
-	//rotor2->SetOrientation(rotation);
-	//rotor2->Scale(glm::vec3(1.0, 0.2, 1.5));
-	rotor2->SetAngM(glm::quat(glm::angleAxis((float) 0.5, glm::vec3(0.0, 1.0, 0.0))));
-	//tail->Scale(glm::vec3(0.8, 0.6, 1.24));
-	//tail->Translate(glm::vec3(0.0, 0.1, -1.5));
-	rotation = glm::angleAxis(8.0f, glm::vec3(1.0, 0.0, 0.0));
-	rotor3->Rotate(rotation);
-	//rotor3->Scale(glm::vec3(0.2, .75, 0.4));
-	rotor3->Translate(glm::vec3(0.0, 0.0, -1.5));
+	rotor2->Scale(glm::vec3(1.0, 0.2, 1.5));
+	rotor2->SetAngM(glm::quat(glm::angleAxis((float) 1.0, glm::vec3(0.0, 1.0, 0.0))));
+	rotor3->Translate(glm::vec3(0.1, 0.8, 5.6));
 	rotor3->SetAngM(glm::quat(glm::angleAxis((float) 1.0, glm::vec3(1.0, 0.0, 0.0))));
 }
 
@@ -791,7 +788,7 @@ void Game::SetupHostage(std::string name) {
 	SceneNode* rot2 = CreateInstance(name+" rotor2", "CylinderMesh", "ToonHeliMaterial", name + " rotor1");
 	SceneNode* tale = CreateInstance(name+" tail", "CylinderMesh", "ToonHeliMaterial", name);
 	SceneNode* rot3 = CreateInstance(name+" rotor3", "CylinderMesh", "ToonHeliMaterial", name + " tail");
-	host->Rotate(glm::angleAxis((float) 180.0, glm::vec3(0.0, 1.0, 0.0)));
+	//host->Rotate(glm::angleAxis((float) 180.0, glm::vec3(0.0, 1.0, 0.0)));
 	host->Translate(glm::vec3(0.0, 0.0, -5.0));
 	host->Scale(glm::vec3(0.5, 0.5, 0.6));
 	nose->Scale(glm::vec3(0.3, 0.2, 0.2));
@@ -833,6 +830,11 @@ void Game::SetupWorld() {
 	SceneNode* ground = CreateInstance("cubeg", "CubeMesh", "ShinyBlueMaterial", "Root");
 	ground->SetPosition(glm::vec3(600, -5, 600));
 	ground->Scale(glm::vec3(1200, 10, 1200));
+	SceneNode *particles = CreateInstance("particles", "MissileParticles", "MissileMaterial", "Root");
+	particles->SetPosition(glm::vec3(600, 10, 600));
+	particles->SetVisible(true);
+	particles->Scale(glm::vec3(200, 200, 200));
+
 	SceneNode* b;
 	std::stack<bool *> occupiedArea;
 	glm::vec3* vertices;
@@ -981,7 +983,7 @@ Enemy* Game::CreateEnemyInstance(std::string entity_name, std::string object_nam
 		}
 		
 		Enemy* enemy_temp = new Enemy(entity_name, geom, mat, (SceneNode*)heli, &resman_);
-		enemy_temp->AddChild(new SceneNode(entity_name + "(Base)", geom2, mat2));
+		enemy_temp->AddChild(new SceneNode(entity_name + "(Base)", geom2, mat2,0));
 		return enemy_temp;
 	}
 
@@ -1122,14 +1124,14 @@ void Game::CreateLaserInstance(std::string entity_name, std::string object_name,
 	}
 
 	// Create Laser instance
-	SceneNode *laser = new SceneNode(entity_name, geom, mat);
+	SceneNode *laser = new SceneNode(entity_name, geom, mat,0);
 	laser->Scale(glm::vec3(1.0, 1.0, 40));
 	scene_.GetNode("Root")->AddChild(laser);
 	float off = 0.0;
 	lazerref = laser;
 	
 	for (int i = 0; i < hostages.size(); ++i) {
-		SceneNode *laser = new SceneNode(entity_name, geom, mat);
+		SceneNode *laser = new SceneNode(entity_name, geom, mat,0);
 		laser->Scale(glm::vec3(1.0, 1.0, 40));
 		scene_.GetNode("Root")->AddChild(laser);
 		float off = 0.0;
@@ -1153,9 +1155,13 @@ void Game::CreateMissileInstance(std::string entity_name, std::string object_nam
 
 
 	// Create Missile instance
-	SceneNode *missile = new SceneNode(entity_name, geom, mat);
-	
+	SceneNode *missile = new SceneNode(entity_name, geom, mat, resman_.GetResource(""));
+	SceneNode *particles = new SceneNode(entity_name + " particles", resman_.GetResource("MissileParticles"), resman_.GetResource("MissileMaterial"), resman_.GetResource(""));
+
 	missile->SetVisible(true);
+	particles->SetVisible(true);
+	missile->AddChild(particles);
+
 	missile->SetPosition(this->heli->GetPosition());
 	missile->SetOrientation(this->camera_.GetOrientation());
 
@@ -1168,9 +1174,13 @@ void Game::CreateMissileInstance(std::string entity_name, std::string object_nam
 	
 	for (int i = 0; i < childmissiles.size(); i++) {
 		if (hostcollected[i]) {
-			SceneNode *childmis = new SceneNode(entity_name, geom, mat);
-
+			SceneNode *childmis = new SceneNode(entity_name, geom, mat, resman_.GetResource(""));
+			SceneNode *childpart = new SceneNode(entity_name + " particles", resman_.GetResource("MissileParticles"), resman_.GetResource("MissileMaterial"), resman_.GetResource(""));
+			
 			childmis->SetVisible(true);
+			childpart->SetVisible(true);
+			childmis->AddChild(childpart);
+
 			childmis->SetPosition(hostages[i]->GetPosition());
 			childmis->SetOrientation(this->camera_.GetOrientation());
 
@@ -1180,7 +1190,6 @@ void Game::CreateMissileInstance(std::string entity_name, std::string object_nam
 			childmissiles[i].push_back(childmis);
 		}
 	}
-	
 }
 
 void Game::CreateEnemyMissile(std::string entity_name, std::string object_name, std::string material_name, Enemy* enemy) {
@@ -1198,7 +1207,7 @@ void Game::CreateEnemyMissile(std::string entity_name, std::string object_name, 
 
 
 	// Create Missile instance
-	SceneNode *missile = new SceneNode(entity_name, geom, mat);
+	SceneNode *missile = new SceneNode(entity_name, geom, mat,0);
 
 	missile->SetVisible(true);
 	//missile->Scale(glm::vec3(10.0));
@@ -1259,7 +1268,7 @@ SceneNode *Game::CreateInstance(std::string entity_name, std::string object_name
 		mat = NULL;
 	}
 	// Create instance
-	SceneNode *node = new SceneNode(entity_name, geom, mat);
+	SceneNode *node = new SceneNode(entity_name, geom, mat,0);
 	return node;
 }
 
@@ -1287,7 +1296,7 @@ SceneNode *Game::CreateInstance(std::string entity_name, std::string object_name
 		mat = NULL;
 	}
 	// Create instance
-	SceneNode *node = new SceneNode(entity_name, geom, mat);
+	SceneNode *node = new SceneNode(entity_name, geom, mat,0);
 	scene_.GetNode(parent_name)->AddChild(node);
 	return node;
 }
@@ -1315,7 +1324,126 @@ Helicopter* Game::CreateHeliInstance(std::string entity_name, std::string object
 		mat = NULL;
 	}
 	// Create instance
-	Helicopter* node = new Helicopter(entity_name, geom, mat);
+	Helicopter* node = new Helicopter(entity_name, geom, mat,0);
+	scene_.GetNode(parent_name)->AddChild(node);
+	return node;
+}
+
+SceneNode *Game::CreateTexturedInstance(std::string entity_name, std::string object_name, std::string material_name, std::string texture_name)
+{
+	Resource *geom;
+	if (object_name != std::string("")) {
+		geom = resman_.GetResource(object_name);
+		if (!geom) {
+			throw(GameException(std::string("Could not find resource \"") + object_name + std::string("\"")));
+		}
+	}
+	else {
+		geom = NULL;
+	}
+
+	Resource *mat;
+	if (material_name != std::string("")) {
+		mat = resman_.GetResource(material_name);
+		if (!mat) {
+			throw(GameException(std::string("Could not find resource \"") + material_name + std::string("\"")));
+		}
+	}
+	else {
+		mat = NULL;
+	}
+
+	Resource *tex;
+	if (texture_name != std::string("")) {
+		tex = resman_.GetResource(texture_name);
+		if (!tex) {
+			throw(GameException(std::string("Could not find resource \"") + material_name + std::string("\"")));
+		}
+	}
+	else {
+		tex = NULL;
+	}
+
+	SceneNode *scn = new SceneNode(entity_name, geom, mat, tex);
+	return scn;
+}
+
+SceneNode *Game::CreateTexturedInstance(std::string entity_name, std::string object_name, std::string material_name, std::string parent_name, std::string texture_name)
+{
+	Resource *geom;
+	if (object_name != std::string("")) {
+		geom = resman_.GetResource(object_name);
+		if (!geom) {
+			throw(GameException(std::string("Could not find resource \"") + object_name + std::string("\"")));
+		}
+	}
+	else {
+		geom = NULL;
+	}
+
+	Resource *mat;
+	if (material_name != std::string("")) {
+		mat = resman_.GetResource(material_name);
+		if (!mat) {
+			throw(GameException(std::string("Could not find resource \"") + material_name + std::string("\"")));
+		}
+	}
+	else {
+		mat = NULL;
+	}
+
+	Resource *tex;
+	if (texture_name != std::string("")) {
+		tex = resman_.GetResource(texture_name);
+		if (!tex) {
+			throw(GameException(std::string("Could not find resource \"") + material_name + std::string("\"")));
+		}
+	}
+	else {
+		tex = NULL;
+	}
+
+	SceneNode *scn = new SceneNode(entity_name, geom, mat, tex);
+	scene_.GetNode(parent_name)->AddChild(scn);
+	return scn;
+}
+
+Helicopter* Game::CreateTexturedHeliInstance(std::string entity_name, std::string object_name, std::string material_name, std::string parent_name, std::string texture_name) {
+	Resource *geom;
+	if (object_name != std::string("")) {
+		geom = resman_.GetResource(object_name);
+		if (!geom) {
+			throw(GameException(std::string("Could not find resource \"") + object_name + std::string("\"")));
+		}
+	}
+	else {
+		geom = NULL;
+	}
+
+	Resource *mat;
+	if (material_name != std::string("")) {
+		mat = resman_.GetResource(material_name);
+		if (!mat) {
+			throw(GameException(std::string("Could not find resource \"") + material_name + std::string("\"")));
+		}
+	}
+	else {
+		mat = NULL;
+	}
+
+	Resource *tex;
+	if (material_name != std::string("")) {
+		tex = resman_.GetResource(texture_name);
+		if (!tex) {
+			throw(GameException(std::string("Could not find resource \"") + material_name + std::string("\"")));
+		}
+	}
+	else {
+		tex = NULL;
+	}
+
+	// Create instance
+	Helicopter* node = new Helicopter(entity_name, geom, mat, tex);
 	scene_.GetNode(parent_name)->AddChild(node);
 	return node;
 }

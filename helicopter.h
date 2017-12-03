@@ -14,7 +14,7 @@
 namespace game {
 	class Helicopter : public SceneNode {
 	public:
-		Helicopter(const std::string name, const Resource *geometry, const Resource *material);
+		Helicopter(const std::string name, const Resource *geometry, const Resource *material,const Resource *texture);
 		Helicopter(SceneNode*);
 		~Helicopter();
 

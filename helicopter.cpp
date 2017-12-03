@@ -11,7 +11,7 @@
 
 
 namespace game {
-	Helicopter::Helicopter(const std::string name, const Resource *geometry, const Resource *material) : SceneNode(name, geometry, material){
+	Helicopter::Helicopter(const std::string name, const Resource *geometry, const Resource *material,const Resource *texture) : SceneNode(name, geometry, material,texture){
 		forward_ = glm::vec3(0.0, 0.0, 1.0);
 		side_ = glm::vec3(1.0, 0.0, 0.0);
 		
@@ -39,14 +39,20 @@ namespace game {
 
 	glm::vec3 Helicopter::GetForward(void) const {
 		glm::vec3 current_forward = orientation_ * forward_;
-		return -current_forward; // Return -forward since the camera coordinate system points in the opposite direction
+		if (texture_ == 0) {
+			return -current_forward;// Return forward since the camera coordinate system points in the opposite direction but texture is loaded in opposite direction
+		}
+		return current_forward; // Return -forward since the camera coordinate system points in the opposite direction
 	}
 
 
 	glm::vec3 Helicopter::GetSide(void) const {
 
 		glm::vec3 current_side = orientation_ * side_;
-		return current_side;
+		if (texture_ == 0) {
+			return current_side;// Return side when texture isnt used
+		}
+		return -current_side;//return - side because texture is inverted
 	}
 
 

@@ -2,7 +2,7 @@
 
 namespace game {
 
-Asteroid::Asteroid(const std::string name, const Resource *geometry, const Resource *material) : SceneNode(name, geometry, material) {
+Asteroid::Asteroid(const std::string name, const Resource *geometry, const Resource *material) : SceneNode(name, geometry, material,0) {
 }
 
 

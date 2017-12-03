@@ -2,7 +2,7 @@
 
 
 namespace game{
-	Enemy::Enemy(const std::string name, const Resource *geometry, const Resource *material, SceneNode* player, ResourceManager* resman) : SceneNode ( name, geometry, material) {
+	Enemy::Enemy(const std::string name, const Resource *geometry, const Resource *material, SceneNode* player, ResourceManager* resman) : SceneNode ( name, geometry, material,0) {
 
 		forward_ = glm::vec3(0.0, 0.0, 1.0);
 		side_ = glm::vec3(1.0, 0.0, 0.0);
@@ -76,7 +76,7 @@ namespace game{
 
 
 		// Create Missile instance
-		SceneNode *missile = new SceneNode(entity_name, geom, mat);
+		SceneNode *missile = new SceneNode(entity_name, geom, mat,0);
 
 		missile->SetVisible(true);
 		missile->SetPosition(this->GetPosition());

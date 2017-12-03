@@ -98,8 +98,11 @@ namespace game {
 			float offsetx, offsety;
 
 			// Scene graph containing all nodes to render
+
 			Helicopter* heli;
+			SceneNode* body;
 			SceneNode* body2;
+			SceneNode* rotorStock;
 			SceneNode* tail;
 			SceneNode* rotor1;
 			SceneNode* rotor2;
@@ -133,7 +136,10 @@ namespace game {
 			void CreateLaserInstance(std::string entity_name, std::string object_name, std::string material_name);
 			SceneNode *CreateInstance(std::string entity_name, std::string object_name, std::string material_name);
 			SceneNode *CreateInstance(std::string entity_name, std::string object_name, std::string material_name, std::string parent_name);
+			SceneNode *CreateTexturedInstance(std::string entity_name, std::string object_name, std::string material_name, std::string texture_name);
+			SceneNode *CreateTexturedInstance(std::string entity_name, std::string object_name, std::string material_name, std::string parent_name, std::string texture_name);
 			Helicopter* CreateHeliInstance(std::string entity_name, std::string object_name, std::string material_name, std::string parent_name);
+			Helicopter* CreateTexturedHeliInstance(std::string entity_name, std::string object_name, std::string material_name, std::string parent_name, std::string texture_name);
 
     }; // class Game
 

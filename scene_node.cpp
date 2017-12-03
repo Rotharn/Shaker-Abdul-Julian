@@ -13,7 +13,7 @@ namespace game {
 
 	}
 
-SceneNode::SceneNode(const std::string name, const Resource *geometry, const Resource *material){
+SceneNode::SceneNode(const std::string name, const Resource *geometry, const Resource *material, const Resource *texture){
 
 	visible_ = true;
 	hit = false;
@@ -47,6 +47,10 @@ SceneNode::SceneNode(const std::string name, const Resource *geometry, const Res
     } else {
         material_ = 0;
     }
+
+	// Set texture
+	if (texture) { texture_ = texture->GetResource(); }
+	else { texture_ = 0; }
 
     // Other attributes
     scale_ = glm::vec3(1.0, 1.0, 1.0);
@@ -257,6 +261,16 @@ glm::mat4 SceneNode::SetupShader(GLuint program, glm::mat4 parent_transf){
 	glm::mat4 normal_matrix = glm::transpose(glm::inverse(transf));
 	GLint normal_mat = glGetUniformLocation(program, "normal_mat");
 	glUniformMatrix4fv(normal_mat, 1, GL_FALSE, glm::value_ptr(normal_matrix));
+	if (texture_) {
+		GLint tex = glGetUniformLocation(program, "texture_map");
+		glUniform1i(tex, 0); // Assign the first texture to the map
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture_); // First texture we bind
+												// Define texture interpolation
+		glGenerateMipmap(GL_TEXTURE_2D);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	}
 
 
 

@@ -14,6 +14,7 @@ uniform sampler2D texture_map;
 vec4 ambient_color = vec4(0.1, 0.1, 0.1, 1.0);
 vec4 diffuse_color = vec4(0.5, 0.5, 0.5, 1.0);
 vec4 specular_color = vec4(0.8, 0.5, 0.9, 1.0);
+vec4 hemispherical = vec4(0.2,0.2,0.3, 1.0); 
 float phong_exponent = 128.0;
 float ambient_amount = 0.1;
 
@@ -21,6 +22,7 @@ float ambient_amount = 0.1;
 void main() 
 {
     // Blinn-Phong shading
+	vec3 upVec = vec3 (0,1,0);
 
     vec3 N, // Interpolated normal for fragment
          L, // Light-source direction
@@ -48,8 +50,10 @@ void main()
     // Retrieve texture value
     vec4 pixel = texture(texture_map, uv_interp);
 
+	hemispherical = ((dot(N , upVec) + 1) / 2) * hemispherical;
+
     // Use texture in determining fragment colour
     //gl_FragColor = pixel;
     //gl_FragColor = (ambient_amount + lambertian_amount) * pixel + specular_amount * specular_color;
-    gl_FragColor = lambertian_amount * pixel + specular_amount * specular_color;
+    gl_FragColor = pixel +  hemispherical * (lambertian_amount + specular_color);
 }
