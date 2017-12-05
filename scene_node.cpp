@@ -17,6 +17,8 @@ SceneNode::SceneNode(const std::string name, const Resource *geometry, const Res
 
 	visible_ = true;
 	hit = false;
+	particle_ = false;
+	blending_ = false;
     // Set name of scene node
     name_ = name;
 
@@ -109,6 +111,15 @@ void SceneNode::SetVisible(bool visible) {
 	}
 }
 
+void SceneNode::SetParticle(bool particle) {
+
+	particle_ = particle;
+}
+
+void SceneNode::SetBlending(bool blend) {
+
+	blending_ = blend;
+}
 
 void SceneNode::SetOrientation(glm::quat orientation){
 
@@ -177,6 +188,20 @@ glm::mat4 SceneNode::Draw(Camera *camera, glm::mat4 parent_transf){
 	if (visible_) {
 		if ((array_buffer_ > 0) && (material_ > 0)) {
 			// Select proper material (shader program)
+			if (blending_) {
+				glDisable(GL_DEPTH_TEST);
+				glEnable(GL_BLEND);
+				//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // Simpler form
+				glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+				glBlendEquationSeparate(GL_FUNC_ADD, GL_MAX);
+				glDepthFunc(GL_ALWAYS);
+			}
+			else {
+				glEnable(GL_DEPTH_TEST);
+				glDisable(GL_BLEND);
+				glDepthFunc(GL_LESS);
+			}
+
 			glUseProgram(material_);
 
 			// Set geometry to draw
@@ -190,12 +215,15 @@ glm::mat4 SceneNode::Draw(Camera *camera, glm::mat4 parent_transf){
 			glm::mat4 transf = SetupShader(material_, parent_transf);
 
 			// Draw geometry
-			if (mode_ == GL_POINTS) {
+			if (mode_ == GL_POINTS && !particle_) {
 				glDrawArrays(GL_TRIANGLES, 0, size_);
-			}
-			else {
+			} else if (mode_ == GL_POINTS && particle_) {
+				glDrawArrays(mode_, 0, size_);
+			} else {
 				glDrawElements(mode_, size_, GL_UNSIGNED_INT, 0);
 			}
+
+			
 
 			return transf;
 		}
@@ -210,22 +238,24 @@ glm::mat4 SceneNode::Draw(Camera *camera, glm::mat4 parent_transf){
 
 
 
-	glm::quat SceneNode::GetAngM(void) const {
+glm::quat SceneNode::GetAngM(void) const {
 
-		return angm_;
-	}
-
-
-	void SceneNode::SetAngM(glm::quat angm) {
-
-		angm_ = angm;
-	}
+	return angm_;
+}
 
 
-	void SceneNode::Update(void) {
+void SceneNode::SetAngM(glm::quat angm) {
 
-		Rotate(angm_);
-	}
+	angm_ = angm;
+}
+
+
+void SceneNode::Update(void) {
+
+	Rotate(angm_);
+}
+
+
 
 glm::mat4 SceneNode::SetupShader(GLuint program, glm::mat4 parent_transf){
 
@@ -288,6 +318,12 @@ void SceneNode::AddChild(SceneNode *node){
 
     children_.push_back(node);
     node->parent_ = this;
+}
+
+void SceneNode::AddChild(SceneNode *node, bool test) {
+
+	children_.insert(children_.begin(),node);
+	node->parent_ = this;
 }
 
 

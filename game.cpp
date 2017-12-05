@@ -206,9 +206,7 @@ void Game::SetupScene(void){
 	root->SetPosition(glm::vec3(0.0, 0.0, 0.0));
 	scene_.SetRoot(root);
 	root->AddChild(cameraNode);
-	//SetupHelicopterOld();
 	SetupHelicopter();
-	//heli->Rotate(glm::angleAxis(3.14159f, glm::vec3(0.0, 1.0, 0.0)));
 	SetupWorld();
 	SetupEnemies();
 	positions = std::deque<glm::vec3>(25,heli->GetPosition());
@@ -637,8 +635,12 @@ void Game::Update(GLFWwindow* window) {
 	}
 	for (int i = 0; i < childmissiles.size(); i++) {
 		if (hostcollected[i]) {
-			for (int j = 0; j < childmissiles[i].size(); j++)
-				childmissiles[i][j]->SetPosition(childmissiles[i][j]->GetPosition() + glm::normalize(childmissiles[i][j]->direction) * 5.0f);
+			for (int j = 0; j < childmissiles[i].size(); j++) {
+				if (childmissiles[i][j]->GetPosition().x < 0 || childmissiles[i][j]->GetPosition().z < 0 || childmissiles[i][j]->GetPosition().x > 1200 || childmissiles[i][j]->GetPosition().z > 1200 || childmissiles[i][j]->GetPosition().y > 350 || childmissiles[i][j]->GetPosition().y < 0)
+					childmissiles[i][j]->SetVisible(false);
+				else
+					childmissiles[i][j]->SetPosition(childmissiles[i][j]->GetPosition() + glm::normalize(childmissiles[i][j]->direction) * 5.0f);
+			}
 		}
 	}
 
@@ -862,10 +864,6 @@ void Game::SetupHelicopter(void) {
 	heli->Scale(glm::vec3(0.1,0.1,0.1));
 	body = (Helicopter *)CreateTexturedInstance("body", "HeliBodyMesh", "textureMaterial", "heli", "Camo");
 	body->Rotate(glm::angleAxis(3.14159f, glm::vec3(0.0, 1.0, 0.0)));
-
-	SceneNode *particles = CreateInstance("particles", "MissileParticles", "MissileMaterial", "heli");
-	particles->SetVisible(true);
-	particles->Scale(glm::vec3(10.0));
 
 	rotorStock = CreateTexturedInstance("rotorStock", "HeliStockRotorMesh", "textureMaterial", "body", "Camo");
 	rotorStock->Translate(glm::vec3(0.0, 1.1, 0.0));
@@ -1224,7 +1222,7 @@ void Game::checkForCollisions(GLFWwindow* window, bool laser) {
 		}
 	}
 	for (int j = 0; j < enemies.size(); j++) {
-		if (glm::length(enemies[j]->GetPosition() - heli->GetPosition()) <= 200.0f) {
+		if (glm::length(enemies[j]->GetPosition() - heli->GetPosition()) <= 150.0f) {
 			enemies[j]->SetAgro(true);
 		}
 		else {
@@ -1287,16 +1285,19 @@ void Game::CreateMissileInstance(std::string entity_name, std::string object_nam
 
 	// Create Missile instance
 	SceneNode *missile = new SceneNode(entity_name, geom, mat, resman_.GetResource(""));
-	SceneNode *particles = new SceneNode(entity_name + " particles", resman_.GetResource("MissileParticles"), resman_.GetResource("MissileMaterial"), resman_.GetResource(""));
+	SceneNode *particles = new SceneNode(entity_name + " particles", resman_.GetResource("MissileParticles"), resman_.GetResource("MissileMaterial"), resman_.GetResource("Fire"));
 
 	missile->SetVisible(true);
+	//particles->Scale(glm::vec3(10.0));
+	particles->SetParticle(true);
+	particles->SetBlending(true);
 	particles->SetVisible(true);
 	missile->AddChild(particles);
 
 	missile->SetPosition(this->heli->GetPosition());
 	missile->SetOrientation(this->camera_.GetOrientation());
 
-	scene_.GetNode("Root")->AddChild(missile);
+	scene_.GetNode("Root")->AddChild(missile,true);
 	float off = 0.0;
 	missile->direction = camera_.GetForward();
 	missiles.push_back(missile);
@@ -1312,16 +1313,19 @@ void Game::CreateMissileInstance(std::string entity_name, std::string object_nam
 	for (int i = 0; i < childmissiles.size(); i++) {
 		if (hostcollected[i]) {
 			SceneNode *childmis = new SceneNode(entity_name, geom, mat, resman_.GetResource(""));
-			//SceneNode *childpart = new SceneNode(entity_name + " particles", resman_.GetResource("MissileParticles"), resman_.GetResource("MissileMaterial"), resman_.GetResource(""));
+			SceneNode *childpart = new SceneNode(entity_name + " particles", resman_.GetResource("MissileParticles"), resman_.GetResource("MissileMaterial"), resman_.GetResource("Fire"));
 			
 			childmis->SetVisible(true);
-			//childpart->SetVisible(true);
-			//childmis->AddChild(childpart);
+			//childpart->Scale(glm::vec3(10.0));
+			childpart->SetParticle(true);
+			childpart->SetBlending(true);
+			childpart->SetVisible(true);
+			childmis->AddChild(childpart);
 
 			childmis->SetPosition(hostages[i]->GetPosition());
 			childmis->SetOrientation(this->camera_.GetOrientation());
 
-			scene_.GetNode("Root")->AddChild(childmis);
+			scene_.GetNode("Root")->AddChild(childmis,true);
 			float off = 0.0;
 			childmis->direction = camera_.GetForward();
 			childmissiles[i].push_back(childmis);
@@ -1351,6 +1355,13 @@ void Game::CreateEnemyMissile(std::string entity_name, std::string object_name, 
 
 	// Create Missile instance
 	SceneNode *missile = new SceneNode(entity_name, geom, mat,0);
+	SceneNode *particles = new SceneNode(entity_name + " particles", resman_.GetResource("MissileParticles"), resman_.GetResource("MissileMaterial"), resman_.GetResource("Fire"));
+
+	missile->SetVisible(true);
+	particles->SetParticle(true);
+	particles->SetBlending(true);
+	particles->SetVisible(true);
+	missile->AddChild(particles);
 
 	missile->SetVisible(true);
 	//missile->Scale(glm::vec3(10.0));

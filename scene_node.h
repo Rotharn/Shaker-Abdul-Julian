@@ -46,6 +46,8 @@ namespace game {
 		void Rotate(glm::quat rot);
 		void Scale(glm::vec3 scale);
 		void SetVisible(bool visible);
+		void SetParticle(bool particle);
+		void SetBlending(bool blend);
 		
 
 		// Draw the node according to scene parameters in 'camera'
@@ -69,7 +71,8 @@ namespace game {
 		void SetAngM(glm::quat angm);
 
 		// Hierarchy-related methods
-		void AddChild(SceneNode *node); 
+		void AddChild(SceneNode *node);
+		void AddChild(SceneNode *node, bool test);
 		std::vector<SceneNode *>::const_iterator children_begin() const;
 		std::vector<SceneNode *>::const_iterator children_end() const;
 
@@ -97,7 +100,9 @@ namespace game {
 		glm::vec3 scale_; // Scale of node
 		glm::vec3 forward;
 		bool visible_;
+		bool particle_;
 		bool hit;
+		bool blending_;
 		float hitDmg;
 		glm::quat angm_;
 		
