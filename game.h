@@ -59,6 +59,8 @@ namespace game {
 			void SetupWorld();
 			void SetupEnemies();
 			void SetupHostage(std::string name);
+			bool PointBoxCollision(glm::vec3 point, glm::vec3* box);
+			glm::vec3* LinePlaneCollision(glm::vec3 planeVector, glm::vec3 planePoint, glm::vec3 lineVector, glm::vec3 linePoint);
 
         protected:
             // GLFW window

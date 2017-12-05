@@ -126,7 +126,7 @@ void Game::SetupResources(void){
 	resman_.CreateCylinder("CylinderMesh",0.0f, 0.2f,3,10,-1);
 	resman_.CreateCylinder("LaserMesh", 0.0f, 0.2f, 3, 5, 0);
 	resman_.CreateCube("CubeMesh");
-	resman_.CreateMissileParticles("MissileParticles");
+	//resman_.CreateMissileParticles("MissileParticles");
 
     // Load material to be applied to asteroids
     std::string filename = std::string(MATERIAL_DIRECTORY) + std::string("/material");
@@ -147,6 +147,9 @@ void Game::SetupResources(void){
 	filename = std::string(MATERIAL_DIRECTORY) + std::string("/camo_cloth_woodland_2048.png");
 	resman_.LoadResource(Texture, "Camo", filename.c_str());
 
+	//filename = std::string(MATERIAL_DIRECTORY) + std::string("/flame4x4orig.png");
+	//resman_.LoadResource(Texture, "Fire", filename.c_str());
+
 	filename = std::string(MATERIAL_DIRECTORY) + std::string("/helicoptero_1.1.obj");
 	resman_.LoadResource(Mesh, "HeliBodyMesh", filename.c_str());
 
@@ -155,9 +158,9 @@ void Game::SetupResources(void){
 
 	filename = std::string(MATERIAL_DIRECTORY) + std::string("/helicoptertailrotor.obj");
 	resman_.LoadResource(Mesh, "HeliTailRotorMesh", filename.c_str());
-	
-	filename = std::string(MATERIAL_DIRECTORY) + std::string("/missile");
-	resman_.LoadResource(Material, "MissileMaterial", filename.c_str());
+
+	//filename = std::string(MATERIAL_DIRECTORY) + std::string("/missile");
+	//resman_.LoadResource(Material, "MissileMaterial", filename.c_str());
 	
 	// Create particles for explosion
 	
@@ -283,6 +286,7 @@ void Game::Update(GLFWwindow* window) {
 
 	//game->test->Scale(glm::vec3(1.01, 1.01, 1.01));
 	//PrintVec3(game->test->GetScale());
+	glm::vec3 prevpos = heli->GetPosition();
 
 	if ((game->input_up == true || game->input_space == true) && game->ship_velocity[1] < 2.0f) {
 		game->ship_velocity[1] += 0.02;
@@ -294,11 +298,11 @@ void Game::Update(GLFWwindow* window) {
 			game->ship_velocity[1] -= 0.02;
 	}
 
-	if ((game->input_down == true || game->input_shift == true) && game->ship_velocity[1] > -2.0f) {
+	if ((game->input_down == true || game->input_shift == true || game->input_x == true) && game->ship_velocity[1] > -2.0f) {
 
 		game->ship_velocity[1] -= 0.02;
 	}
-	if ((game->input_down == false && game->input_shift == false) && game->ship_velocity[1] < 0.0f) {
+	if ((game->input_down == false && game->input_shift == false && game->input_x == false) && game->ship_velocity[1] < 0.0f) {
 		if (game->ship_velocity[1] > -0.02f)
 			game->ship_velocity[1] = 0.0;
 		else
@@ -399,7 +403,7 @@ void Game::Update(GLFWwindow* window) {
 
 	glm::vec3 currPos = game->camera_.GetPosition();
 	glm::vec3 offsetPos = game->camera_.GetPosition() + (game->camera_.GetForward() * offsetx) - (game->camera_.GetUp() * offsety);
-	
+
 	game->camera_.Translate((game->camera_.GetForward() * offsetx) - (game->camera_.GetUp() * offsety));
 
 	game->camera_.Pitch(rot_factor*ship_rotation[0]);
@@ -413,63 +417,189 @@ void Game::Update(GLFWwindow* window) {
 	}
 	//game->lazerref->SetForward(game->camera_.GetForward());
 	//for (int i = 0; i < childlasers.size(); ++i) {
-		//childlasers[i]->SetForward(game->camera_.GetForward());
+	//childlasers[i]->SetForward(game->camera_.GetForward());
 	//}
 
 
 	game->camera_.Translate((game->camera_.GetForward() * (offsetx * -1.0f)) - (game->camera_.GetUp() * offsety) * -1.0f);
 
+
+	//glm::vec3 mov = glm::vec3(game->camera_.GetForward().x * ship_velocity[2] + game->camera_.GetSide().x * ship_velocity[0] + game->camera_.GetUp().x *ship_velocity[1]
+	//, game->camera_.GetForward().y * ship_velocity[2] + game->camera_.GetSide().y * ship_velocity[0] + game->camera_.GetUp().y *ship_velocity[1]
+	//, game->camera_.GetForward().z * ship_velocity[2] + game->camera_.GetSide().z * ship_velocity[0] + game->camera_.GetUp().z *ship_velocity[1]);
+
+	glm::vec3* pos = &game->heli->GetPosition();
+	if (pos->z < 0) {
+		game->heli->SetPosition(glm::vec3(pos->x, pos->y, 0));
+		ship_velocity[2] = 0;
+	}
+	if (pos->z > 1200) {
+		game->heli->SetPosition(glm::vec3(pos->x, pos->y, 1200));
+		ship_velocity[2] = 0;
+	}
+	if (pos->x > 1200) {
+		game->heli->SetPosition(glm::vec3(1200, pos->y, pos->z));
+		ship_velocity[0] = 0;
+	}
+	if (pos->x < 0) {
+		game->heli->SetPosition(glm::vec3(0, pos->y, pos->z));
+		ship_velocity[0] = 0;
+	}
+	if (pos->y < 0) {
+		game->heli->SetPosition(glm::vec3(pos->x, -0, pos->z));
+		ship_velocity[1] = 0;
+	}
+	if (pos->y > 350) {
+		game->heli->SetPosition(glm::vec3(pos->x, 350, pos->z));
+		ship_velocity[1] = 0;
+	}
+	/*
+	glm::vec3* pos = &game->heli->GetPosition();
+	if (pos->z < 0) {
+	game->heli->SetPosition(glm::vec3(pos->x, pos->y, 0));
+	ship_velocity[2] = 0;
+	}
+	if (pos->z > 1200) {
+	game->heli->SetPosition(glm::vec3(pos->x, pos->y, 1200));
+	ship_velocity[2] = 0;
+	}
+	if (pos->x > 1200) {
+	game->heli->SetPosition(glm::vec3(1200, pos->y, pos->z));
+	ship_velocity[0] = 0;
+	}
+	if (pos->x < 0) {
+	game->heli->SetPosition(glm::vec3(0, pos->y, pos->z));
+	ship_velocity[0] = 0;
+	}
+	if (pos->y < 0 ) {
+	game->heli->SetPosition(glm::vec3(pos->x, -0, pos->z));
+	ship_velocity[1] = 0;
+	}
+	if (pos->y > 350) {
+	game->heli->SetPosition(glm::vec3(pos->x, 350, pos->z));
+	ship_velocity[1] = 0;
+	}
+
+
+
+
+	if (pos->z < -50 || pos->z > 650) {
+	game->camera_.SetPosition(glm::vec3(pos->x, pos->y, pos->z + (mov.z * -1.1f)));
+	ship_velocity[2] = 0;
+	}
+	if (pos->x < -350 || pos->x > 350) {
+	game->camera_.SetPosition(glm::vec3(pos->x + (mov.x * -1.1f), pos->y, pos->z));
+	ship_velocity[0] = 0;
+	}
+	if (pos->y < -350 || pos->y > 350) {
+	game->camera_.SetPosition(glm::vec3(pos->x, pos->y + (mov.y * -1.1f), pos->z));
+	ship_velocity[1] = 0;
+	}
+	*/
+
+
+	//game->camera_.Translate(game->heli->GetForward()*trans_factor*ship_velocity[2] * -1.0f);
+	//game->camera_.Translate(-game->heli->GetSide()*trans_factor*ship_velocity[0] * -1.0f);
+	//game->camera_.Translate(glm::vec3(0.0, 1.0, 0.0)*trans_factor*ship_velocity[1]);
+	//game->heli->SetPosition(game->camera_.GetPosition() + (game->camera_.GetForward() * offsetx) - (game->camera_.GetUp() * offsety));	
+
+	game->heli->Translate(game->heli->GetForward()*trans_factor*ship_velocity[2] * -1.0f);
+	game->heli->Translate(-game->heli->GetSide()*trans_factor*ship_velocity[0] * -1.0f);
+	game->heli->Translate(glm::vec3(0.0, 1.0, 0.0)*trans_factor*ship_velocity[1]);
+
+	SceneNode* collidedBuilding = NULL;
+	glm::vec3 heliPos = heli->GetPosition();
+	for (int i = 0; i < buildings.size(); i++) {
+		if (PointBoxCollision(heliPos, buildings[i]->boundingBox)) {
+			collidedBuilding = buildings[i];
+			break;
+		}
+	}
+	/*
+	box : 0 min x max y max z
+	box : 1 max x max y max z *allmaxes*
+	box : 2 min x max y min z
+	box : 3 max x max y min z
+	box : 4 min x min y max z
+	box : 5 max x min y max z
+	box : 6 min x min y min z *all mins*
+	box : 7 max x min y min z
+	*/
+
+	if (collidedBuilding != NULL) {
+		glm::vec3* box = collidedBuilding->boundingBox;
+		glm::vec3* possibleIntersection;
+		for (int i = 0; i < 1; i++) {
+			possibleIntersection = LinePlaneCollision(glm::vec3(1.0, 0.0, 0.0), box[1], heli->GetPosition(), prevpos);
+			if (possibleIntersection != NULL) {
+				if (possibleIntersection->x >= heli->GetPosition().x && possibleIntersection->x <= prevpos.x &&
+					possibleIntersection->y <= box[1].y && possibleIntersection->z <= box[1].z &&
+					possibleIntersection->y >= box[6].y && possibleIntersection->z >= box[6].z) {
+					ship_velocity[0] = 0.0;
+					heli->SetPosition(glm::vec3(box[1].x, heli->GetPosition().y, heli->GetPosition().z));
+					continue;
+				}
+			}
+			possibleIntersection = LinePlaneCollision(glm::vec3(-1.0, 0.0, 0.0), box[6], heli->GetPosition(), prevpos);
+			if (possibleIntersection != NULL) {
+				if (possibleIntersection->x <= heli->GetPosition().x && possibleIntersection->x >= prevpos.x &&
+					possibleIntersection->y <= box[1].y && possibleIntersection->z <= box[1].z &&
+					possibleIntersection->y >= box[6].y && possibleIntersection->z >= box[6].z) {
+					ship_velocity[0] = 0.0;
+					heli->SetPosition(glm::vec3(box[6].x, heli->GetPosition().y, heli->GetPosition().z));
+					continue;
+				}
+			}
+			possibleIntersection = LinePlaneCollision(glm::vec3(0.0, 1.0, 0.0), box[1], heli->GetPosition(), prevpos);
+			if (possibleIntersection != NULL) {
+				if (possibleIntersection->y >= heli->GetPosition().y && possibleIntersection->y <= prevpos.y &&
+					possibleIntersection->x <= box[1].x && possibleIntersection->z <= box[1].z &&
+					possibleIntersection->x >= box[6].x && possibleIntersection->z >= box[6].z) {
+					ship_velocity[1] = 0.0;
+					heli->SetPosition(glm::vec3(heli->GetPosition().x, box[1].y, heli->GetPosition().z));
+					continue;
+				}
+			}
+			possibleIntersection = LinePlaneCollision(glm::vec3(0.0, -1.0, 0.0), box[6], heli->GetPosition(), prevpos);
+			if (possibleIntersection != NULL) {
+				if (possibleIntersection->y <= heli->GetPosition().y && possibleIntersection->y >= prevpos.x &&
+					possibleIntersection->x <= box[1].x && possibleIntersection->z <= box[1].z &&
+					possibleIntersection->x >= box[6].x && possibleIntersection->z >= box[6].z) {
+					ship_velocity[1] = 0.0;
+					heli->SetPosition(glm::vec3(heli->GetPosition().x, box[6].y, heli->GetPosition().z));
+					continue;
+				}
+			}
+			possibleIntersection = LinePlaneCollision(glm::vec3(0.0, 0.0, 1.0), box[1], heli->GetPosition(), prevpos);
+			if (possibleIntersection != NULL) {
+				if (possibleIntersection->z >= heli->GetPosition().z && possibleIntersection->z <= prevpos.z &&
+					possibleIntersection->y <= box[1].y && possibleIntersection->x < box[1].x &&
+					possibleIntersection->y >= box[6].y && possibleIntersection->x > box[6].x) {
+					ship_velocity[2] = 0.0;
+					heli->SetPosition(glm::vec3(heli->GetPosition().x, heli->GetPosition().y, box[1].z));
+					continue;
+				}
+			}
+			possibleIntersection = LinePlaneCollision(glm::vec3(0.0, 0.0, -1.0), box[6], heli->GetPosition(), prevpos);
+			if (possibleIntersection != NULL) {
+				if (possibleIntersection->z <= heli->GetPosition().z && possibleIntersection->z >= prevpos.z &&
+					possibleIntersection->y <= box[1].y && possibleIntersection->x <= box[1].x &&
+					possibleIntersection->y >= box[6].y && possibleIntersection->x >= box[6].x) {
+					ship_velocity[2] = 0.0;
+					heli->SetPosition(glm::vec3(heli->GetPosition().x, heli->GetPosition().y, box[6].z));
+					continue;
+				}
+			}
+		}
+	}
+
 	game->camera_.Translate(game->heli->GetForward()*trans_factor*ship_velocity[2] * -1.0f);
 	game->camera_.Translate(-game->heli->GetSide()*trans_factor*ship_velocity[0] * -1.0f);
 	game->camera_.Translate(glm::vec3(0.0, 1.0, 0.0)*trans_factor*ship_velocity[1]);
 
-	//glm::vec3 mov = glm::vec3(game->camera_.GetForward().x * ship_velocity[2] + game->camera_.GetSide().x * ship_velocity[0] + game->camera_.GetUp().x *ship_velocity[1]
-		//, game->camera_.GetForward().y * ship_velocity[2] + game->camera_.GetSide().y * ship_velocity[0] + game->camera_.GetUp().y *ship_velocity[1]
-		//, game->camera_.GetForward().z * ship_velocity[2] + game->camera_.GetSide().z * ship_velocity[0] + game->camera_.GetUp().z *ship_velocity[1]);
 
-	glm::vec3* pos = &game->camera_.GetPosition();
-	if (pos->z < 0) {
-		game->camera_.SetPosition(glm::vec3(pos->x, pos->y, 0));
-		ship_velocity[2] = 0;
-	}
-	if (pos->z > 1200) {
-		game->camera_.SetPosition(glm::vec3(pos->x, pos->y, 1200));
-		ship_velocity[2] = 0;
-	}
-	if (pos->x > 1200) {
-		game->camera_.SetPosition(glm::vec3(1200, pos->y, pos->z));
-		ship_velocity[0] = 0;
-	}
-	if (pos->x < 0) {
-		game->camera_.SetPosition(glm::vec3(0, pos->y, pos->z));
-		ship_velocity[0] = 0;
-	}
-	if (pos->y < 0 ) {
-		game->camera_.SetPosition(glm::vec3(pos->x, -0, pos->z));
-		ship_velocity[1] = 0;
-	}
-	if (pos->y > 350) {
-		game->camera_.SetPosition(glm::vec3(pos->x, 350, pos->z));
-		ship_velocity[1] = 0;
-	}
-	/*
-	if (pos->z < -50 || pos->z > 650) {
-		game->camera_.SetPosition(glm::vec3(pos->x, pos->y, pos->z + (mov.z * -1.1f)));
-		ship_velocity[2] = 0;
-	}
-	if (pos->x < -350 || pos->x > 350) {
-		game->camera_.SetPosition(glm::vec3(pos->x + (mov.x * -1.1f), pos->y, pos->z));
-		ship_velocity[0] = 0;
-	}
-	if (pos->y < -350 || pos->y > 350) {
-		game->camera_.SetPosition(glm::vec3(pos->x, pos->y + (mov.y * -1.1f), pos->z));
-		ship_velocity[1] = 0;
-	}
-	*/
-	
-	game->heli->SetVisible(true);
 
-	game->heli->SetPosition(game->camera_.GetPosition() + (game->camera_.GetForward() * offsetx) - (game->camera_.GetUp() * offsety));
+	game->camera_.SetPosition(heli->GetPosition() - camera_.GetForward() * offsetx + camera_.GetUp() * offsety);
 
 	if (game->input_c == true || game->input_m2 == true) {
 		lazerref->SetVisible(true);
@@ -830,10 +960,11 @@ void Game::SetupWorld() {
 	SceneNode* ground = CreateInstance("cubeg", "CubeMesh", "ShinyBlueMaterial", "Root");
 	ground->SetPosition(glm::vec3(600, -5, 600));
 	ground->Scale(glm::vec3(1200, 10, 1200));
-	SceneNode *particles = CreateInstance("particles", "MissileParticles", "MissileMaterial", "Root");
+	/*
+	SceneNode *particles = CreateTexturedInstance("particles", "MissileParticles", "MissileMaterial", "Fire");
 	particles->SetPosition(glm::vec3(600, 10, 600));
 	particles->SetVisible(true);
-	particles->Scale(glm::vec3(200, 200, 200));
+	particles->Scale(glm::vec3(200, 200, 200));*/
 
 	SceneNode* b;
 	std::stack<bool *> occupiedArea;
@@ -1156,11 +1287,11 @@ void Game::CreateMissileInstance(std::string entity_name, std::string object_nam
 
 	// Create Missile instance
 	SceneNode *missile = new SceneNode(entity_name, geom, mat, resman_.GetResource(""));
-	SceneNode *particles = new SceneNode(entity_name + " particles", resman_.GetResource("MissileParticles"), resman_.GetResource("MissileMaterial"), resman_.GetResource(""));
+	//SceneNode *particles = new SceneNode(entity_name + " particles", resman_.GetResource("MissileParticles"), resman_.GetResource("MissileMaterial"), resman_.GetResource(""));
 
 	missile->SetVisible(true);
-	particles->SetVisible(true);
-	missile->AddChild(particles);
+	//particles->SetVisible(true);
+	//missile->AddChild(particles);
 
 	missile->SetPosition(this->heli->GetPosition());
 	missile->SetOrientation(this->camera_.GetOrientation());
@@ -1169,17 +1300,23 @@ void Game::CreateMissileInstance(std::string entity_name, std::string object_nam
 	float off = 0.0;
 	missile->direction = camera_.GetForward();
 	missiles.push_back(missile);
+	if (missiles.size() > 10) {
+		SceneNode *mis = missiles.front();
+		missiles.pop_front();
+		mis->SetVisible(false);
+		mis->~SceneNode();
+	}
 
 	// Create Missiles for children
 	
 	for (int i = 0; i < childmissiles.size(); i++) {
 		if (hostcollected[i]) {
 			SceneNode *childmis = new SceneNode(entity_name, geom, mat, resman_.GetResource(""));
-			SceneNode *childpart = new SceneNode(entity_name + " particles", resman_.GetResource("MissileParticles"), resman_.GetResource("MissileMaterial"), resman_.GetResource(""));
+			//SceneNode *childpart = new SceneNode(entity_name + " particles", resman_.GetResource("MissileParticles"), resman_.GetResource("MissileMaterial"), resman_.GetResource(""));
 			
 			childmis->SetVisible(true);
-			childpart->SetVisible(true);
-			childmis->AddChild(childpart);
+			//childpart->SetVisible(true);
+			//childmis->AddChild(childpart);
 
 			childmis->SetPosition(hostages[i]->GetPosition());
 			childmis->SetOrientation(this->camera_.GetOrientation());
@@ -1188,6 +1325,12 @@ void Game::CreateMissileInstance(std::string entity_name, std::string object_nam
 			float off = 0.0;
 			childmis->direction = camera_.GetForward();
 			childmissiles[i].push_back(childmis);
+			if (childmissiles[i].size() > 10) {
+				SceneNode *cmis = childmissiles[i].front();
+				childmissiles[i].pop_front();
+				cmis->SetVisible(false);
+				cmis->~SceneNode();
+			}
 		}
 	}
 }
@@ -1446,6 +1589,58 @@ Helicopter* Game::CreateTexturedHeliInstance(std::string entity_name, std::strin
 	Helicopter* node = new Helicopter(entity_name, geom, mat, tex);
 	scene_.GetNode(parent_name)->AddChild(node);
 	return node;
+}
+
+bool Game::PointBoxCollision(glm::vec3 point, glm::vec3* box) {
+	/*
+	box : 0 min x max y max z
+	box : 1 max x max y max z *allmaxes*
+	box : 2 min x max y min z
+	box : 3 max x max y min z
+	box : 4 min x min y max z
+	box : 5 max x min y max z
+	box : 6 min x min y min z *all mins*
+	box : 7 max x min y min z
+	*/
+
+	if (point.x > box[6].x && point.x < box[1].x && point.y < box[1].y && point.z > box[6].z && point.z < box[1].z)
+		return true;
+	else
+		return false;
+
+}
+
+glm::vec3* Game::LinePlaneCollision(glm::vec3 planeVector, glm::vec3 planePoint, glm::vec3 lineVector, glm::vec3 linePoint)
+{
+	glm::vec3 returnResult;
+	returnResult = glm::vec3();
+	float vp1, vp2, vp3, n1, n2, n3, v1, v2, v3, m1, m2, m3, t, vpt;
+	vp1 = planeVector[0];
+	vp2 = planeVector[1];
+	vp3 = planeVector[2];
+	n1 = planePoint[0];
+	n2 = planePoint[1];
+	n3 = planePoint[2];
+	v1 = lineVector[0];
+	v2 = lineVector[1];
+	v3 = lineVector[2];
+	m1 = linePoint[0];
+	m2 = linePoint[1];
+	m3 = linePoint[2];
+	vpt = v1 * vp1 + v2 * vp2 + v3 * vp3;
+
+	if (vpt == 0)
+	{
+		return NULL;
+	}
+	else
+	{
+		t = ((n1 - m1) * vp1 + (n2 - m2) * vp2 + (n3 - m3) * vp3) / vpt;
+		returnResult[0] = m1 + v1 * t;
+		returnResult[1] = m2 + v2 * t;
+		returnResult[2] = m3 + v3 * t;
+		return &returnResult;
+	}
 }
 
 } // namespace game
