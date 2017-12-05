@@ -12,6 +12,7 @@
 // Default extensions for different shader source files
 #define VERTEX_PROGRAM_EXTENSION "_vp.glsl"
 #define FRAGMENT_PROGRAM_EXTENSION "_fp.glsl"
+#define GEOMETRY_PROGRAM_EXTENSION "_gp.glsl"
 
 namespace game {
 
@@ -37,7 +38,7 @@ namespace game {
             void CreateSphere(std::string object_name, float radius = 0.6, int num_samples_theta = 90, int num_samples_phi = 45);
 			void CreateCylinder(std::string object_name, float height = 0.0, float circle_radius = 0.2, int num_line_samples = 3, int num_circle_samples = 30, int startingPoint = -1);
 			void CreateCube(std::string object_name);
-			void CreateMissileParticles(std::string object_name, int num_particles=20);
+			void CreateMissileParticles(std::string object_name, int num_particles = 20000, float loop_radius = 0.6, float circle_radius = 0.2);
 
         private:
             // List storing all resources

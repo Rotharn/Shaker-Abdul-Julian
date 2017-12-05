@@ -126,7 +126,7 @@ void Game::SetupResources(void){
 	resman_.CreateCylinder("CylinderMesh",0.0f, 0.2f,3,10,-1);
 	resman_.CreateCylinder("LaserMesh", 0.0f, 0.2f, 3, 5, 0);
 	resman_.CreateCube("CubeMesh");
-	//resman_.CreateMissileParticles("MissileParticles");
+	resman_.CreateMissileParticles("MissileParticles");
 
     // Load material to be applied to asteroids
     std::string filename = std::string(MATERIAL_DIRECTORY) + std::string("/material");
@@ -147,8 +147,8 @@ void Game::SetupResources(void){
 	filename = std::string(MATERIAL_DIRECTORY) + std::string("/camo_cloth_woodland_2048.png");
 	resman_.LoadResource(Texture, "Camo", filename.c_str());
 
-	//filename = std::string(MATERIAL_DIRECTORY) + std::string("/flame4x4orig.png");
-	//resman_.LoadResource(Texture, "Fire", filename.c_str());
+	filename = std::string(MATERIAL_DIRECTORY) + std::string("/flame4x4orig.png");
+	resman_.LoadResource(Texture, "Fire", filename.c_str());
 
 	filename = std::string(MATERIAL_DIRECTORY) + std::string("/helicoptero_1.1.obj");
 	resman_.LoadResource(Mesh, "HeliBodyMesh", filename.c_str());
@@ -159,8 +159,8 @@ void Game::SetupResources(void){
 	filename = std::string(MATERIAL_DIRECTORY) + std::string("/helicoptertailrotor.obj");
 	resman_.LoadResource(Mesh, "HeliTailRotorMesh", filename.c_str());
 
-	//filename = std::string(MATERIAL_DIRECTORY) + std::string("/missile");
-	//resman_.LoadResource(Material, "MissileMaterial", filename.c_str());
+	filename = std::string(MATERIAL_DIRECTORY) + std::string("/missile");
+	resman_.LoadResource(Material, "MissileMaterial", filename.c_str());
 	
 	// Create particles for explosion
 	
@@ -862,6 +862,11 @@ void Game::SetupHelicopter(void) {
 	heli->Scale(glm::vec3(0.1,0.1,0.1));
 	body = (Helicopter *)CreateTexturedInstance("body", "HeliBodyMesh", "textureMaterial", "heli", "Camo");
 	body->Rotate(glm::angleAxis(3.14159f, glm::vec3(0.0, 1.0, 0.0)));
+
+	SceneNode *particles = CreateInstance("particles", "MissileParticles", "MissileMaterial", "heli");
+	particles->SetVisible(true);
+	particles->Scale(glm::vec3(10.0));
+
 	rotorStock = CreateTexturedInstance("rotorStock", "HeliStockRotorMesh", "textureMaterial", "body", "Camo");
 	rotorStock->Translate(glm::vec3(0.0, 1.1, 0.0));
 	rotor2 = CreateInstance("rotor2", "CylinderMesh", "ShinyBlueMaterial", "rotorStock");
@@ -960,11 +965,6 @@ void Game::SetupWorld() {
 	SceneNode* ground = CreateInstance("cubeg", "CubeMesh", "ShinyBlueMaterial", "Root");
 	ground->SetPosition(glm::vec3(600, -5, 600));
 	ground->Scale(glm::vec3(1200, 10, 1200));
-	/*
-	SceneNode *particles = CreateTexturedInstance("particles", "MissileParticles", "MissileMaterial", "Fire");
-	particles->SetPosition(glm::vec3(600, 10, 600));
-	particles->SetVisible(true);
-	particles->Scale(glm::vec3(200, 200, 200));*/
 
 	SceneNode* b;
 	std::stack<bool *> occupiedArea;
@@ -1287,11 +1287,11 @@ void Game::CreateMissileInstance(std::string entity_name, std::string object_nam
 
 	// Create Missile instance
 	SceneNode *missile = new SceneNode(entity_name, geom, mat, resman_.GetResource(""));
-	//SceneNode *particles = new SceneNode(entity_name + " particles", resman_.GetResource("MissileParticles"), resman_.GetResource("MissileMaterial"), resman_.GetResource(""));
+	SceneNode *particles = new SceneNode(entity_name + " particles", resman_.GetResource("MissileParticles"), resman_.GetResource("MissileMaterial"), resman_.GetResource(""));
 
 	missile->SetVisible(true);
-	//particles->SetVisible(true);
-	//missile->AddChild(particles);
+	particles->SetVisible(true);
+	missile->AddChild(particles);
 
 	missile->SetPosition(this->heli->GetPosition());
 	missile->SetOrientation(this->camera_.GetOrientation());
