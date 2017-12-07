@@ -12,6 +12,7 @@
 
 #include "resource.h"
 #include "camera.h"
+#include "shader_attribute.h"
 #include <iostream>
 namespace game {
 
@@ -46,8 +47,13 @@ namespace game {
 		void Rotate(glm::quat rot);
 		void Scale(glm::vec3 scale);
 		void SetVisible(bool visible);
+		bool GetVisible();
 		void SetParticle(bool particle);
 		void SetBlending(bool blend);
+		// Shader attributes
+		void AddShaderAttribute(std::string name, DataType type, int size, GLfloat *data);
+		void RemoveShaderAttribute(std::string name);
+		void ClearShaderAttributes(void);
 		
 
 		// Draw the node according to scene parameters in 'camera'
@@ -75,6 +81,7 @@ namespace game {
 		void AddChild(SceneNode *node, bool test);
 		std::vector<SceneNode *>::const_iterator children_begin() const;
 		std::vector<SceneNode *>::const_iterator children_end() const;
+
 
 		glm::vec3 direction;
 
@@ -108,6 +115,7 @@ namespace game {
 		
 		SceneNode *parent_;
 		std::vector<SceneNode *> children_;
+		std::vector<ShaderAttribute> shader_att_; // Shader attributes
 
 		// Set matrices that transform the node in a shader program
 		// Return transformation of current node combined with

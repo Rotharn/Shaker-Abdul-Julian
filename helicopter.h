@@ -19,7 +19,6 @@ namespace game {
 		~Helicopter();
 
 
-
 		// Set global camera attributes
 
 
@@ -27,6 +26,13 @@ namespace game {
 		glm::vec3 GetForward(void) const;
 		glm::vec3 GetSide(void) const;
 		glm::vec3 GetUp(void) const;
+
+		void SetHostage(bool);
+		void SetFreedom(bool);
+		bool GetFreedom();
+		void SetCaptors(SceneNode**);
+		SceneNode** GetCaptors();
+
 
 		// Perform relative transformations of camera
 		void Pitch(float angle);
@@ -46,6 +52,11 @@ namespace game {
 		float health;
 		float armour;
 		float wasHit;
+
+		SceneNode** captors;
+		bool isHostage;
+		bool free;
+
 
 		glm::vec3 forward_; // Initial forward vector
 		glm::vec3 side_; // Initial side vector

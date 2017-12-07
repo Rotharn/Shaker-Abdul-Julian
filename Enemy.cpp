@@ -1,13 +1,13 @@
 #include "Enemy.h"
 
 
-namespace game{
-	Enemy::Enemy(const std::string name, const Resource *geometry, const Resource *material, SceneNode* player, ResourceManager* resman) : SceneNode ( name, geometry, material,0) {
+namespace game {
+	Enemy::Enemy(int enemyType, const std::string name, const Resource *geometry, const Resource *material, Resource* texture, SceneNode* player, ResourceManager* resman) : SceneNode(name, geometry, material, texture) {
 
 		forward_ = glm::vec3(0.0, 0.0, 1.0);
 		side_ = glm::vec3(1.0, 0.0, 0.0);
-		
-		this->type = STATIONARY;
+
+		this->type = enemyType;
 		this->damage = 1.0;
 		shoottime = 0.0;
 
@@ -18,6 +18,7 @@ namespace game{
 		incrementingFloat = 0.0;
 		hasShot = false;
 		agro = false;
+		parentEnemy = NULL;
 	}
 
 	Enemy::~Enemy() {
@@ -26,7 +27,7 @@ namespace game{
 
 
 	void Enemy::Update() {
-		if (agro) {
+		if (agro && visible_) {
 			float dtime = glfwGetTime() - time;
 			time = glfwGetTime();
 			shoottime += dtime;
@@ -40,12 +41,45 @@ namespace game{
 				SetOrientation(glm::quat(aax));
 				//SetOrientation(glm::normalize(glm::angleAxis(glm::normalize(1.0f * glm::dot(this->position_, this->position_ - player->GetPosition())), glm::normalize(glm::cross(this->GetPosition(), this->position_ - player->GetPosition())))));
 
+				if (this->parentEnemy != NULL) {
+					SetPosition(parentEnemy->GetPosition() + glm::vec3(0.0, 3.0, 0.0));
+				}
+
 				incrementingFloat += 0.01;
 				if (shoottime > 2.0) {
 					shoottime = 0;
 					time = glfwGetTime();
 					hasShot = true;
+					shotCount = 1;
 				}
+			}
+			else if (type == MOVING) {
+
+
+
+			}
+
+			else if (type == FLYING) {
+
+
+				glm::vec3 zax = glm::normalize(player->GetPosition() - this->position_);
+				glm::vec3 xax = glm::normalize(glm::cross(this->GetUp(), zax));
+				glm::vec3 yax = glm::vec3(0.0, 1.0, 0.0);
+				glm::mat3 aax = glm::mat3(xax, yax, zax);
+				SetOrientation(glm::quat(aax));
+
+				Translate(this->GetForward() * 1.5f);
+
+
+				incrementingFloat += 0.01;
+				if (shoottime > 2.0) {
+					shoottime = 0;
+					time = glfwGetTime();
+					hasShot = true;
+					shotCount = 5;
+				}
+
+
 			}
 		}
 
@@ -53,13 +87,46 @@ namespace game{
 
 	bool Enemy::Shoot() {
 		bool shooting = hasShot;
-		if(hasShot){
-			std::cout << "FIRE!";
-			hasShot = !hasShot;
+		if (hasShot) {
+			shotCount--;
+			if (shotCount == 0)
+				hasShot = !hasShot;
 		}
-		return shooting;
-			
+		glm::vec3 zax = glm::normalize(player->GetPosition() - this->position_);
+		glm::vec3 xax = glm::normalize(glm::cross(this->GetUp(), zax));
+		glm::vec3 yax = glm::cross(zax, xax);
+		glm::mat3 aax = glm::mat3(xax, yax, zax);
+		shotOrientation = (glm::quat(aax));
 
+		shotDirection = shotOrientation * forward_;
+
+
+		return shooting;
+
+
+	}
+
+	void Enemy::SetParentEnemy(Enemy* parEn) {
+		parentEnemy = parEn;
+	}
+
+	Enemy* Enemy::GetParentEnemy() {
+		return parentEnemy;
+	}
+
+	int Enemy::GetType() {
+		return type;
+	}
+
+	glm::quat* Enemy::GetShotOrientation() {
+		return &shotOrientation;
+	}
+	glm::vec3 Enemy::GetShotDirection() {
+		return shotDirection;
+	}
+
+	void Enemy::SetType(int t) {
+		this->type = t;
 	}
 	SceneNode* Enemy::CreateMissileInstance(std::string entity_name, std::string object_name, std::string material_name) {
 
@@ -76,7 +143,7 @@ namespace game{
 
 
 		// Create Missile instance
-		SceneNode *missile = new SceneNode(entity_name, geom, mat,0);
+		SceneNode *missile = new SceneNode(entity_name, geom, mat, 0);
 
 		missile->SetVisible(true);
 		missile->SetPosition(this->GetPosition());
@@ -85,7 +152,7 @@ namespace game{
 
 		return missile;
 	}
-	
+
 	void Enemy::AttackCollisions() {
 
 		if (this->children_.size() > 0) {

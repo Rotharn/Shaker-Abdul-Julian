@@ -17,8 +17,8 @@ out float particle_id;
 
 // Simulation parameters (constants)
 uniform vec3 up_vec = vec3(0.0, 1.0, 0.0); // Up direction
-float accel = 10.0; // An acceleration applied to the particles coming from some attraction force
-float speed = 10.0; // Control the speed of the motion
+float accel = 12.0; // An acceleration applied to the particles coming from some attraction force
+float speed = 12.0; // Control the speed of the motion
 
 // Define some useful constants
 const float pi = 3.1415926536;
@@ -42,7 +42,7 @@ void main()
 
     // First, work in local model coordinates (do not apply any transformation)
     vec3 position = vertex;
-    position += speed*normal*accel*t*t;
+    position += speed*normal*vec3(0.0,0.0,-1.0)*accel*t*t;
     
     // Define output position but do not apply the projection matrix yet
     gl_Position = view_mat * world_mat * vec4(position, 1.0);

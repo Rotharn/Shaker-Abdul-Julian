@@ -19,6 +19,9 @@ namespace game {
 		armour = 1.0;
 		visible_ = true;
 		time = glfwGetTime();
+		this->blending_ = true;
+		isHostage = false;
+		free = false;
 
 
 	}
@@ -29,7 +32,9 @@ namespace game {
 	Helicopter::~Helicopter() {
 
 	}
-
+	void Helicopter::SetHostage(bool host) {
+		isHostage = host;
+	}
 
 	void Helicopter::Hit(float dmg) {
 		this->health -= glm::max(0.1f, dmg * 1 / armour);
@@ -63,6 +68,35 @@ namespace game {
 		glm::vec3 current_up = glm::cross(current_forward, current_side);
 		current_up = glm::normalize(current_up);
 		return current_up;
+	}
+
+	void Helicopter::SetFreedom(bool isFree) {
+		free = isFree;
+	}
+
+	bool Helicopter::GetFreedom() {
+		bool check = true;
+		for (int i = 0; i < 4; i++) {
+			if (captors == NULL)
+				break;
+			if (captors[i] == NULL) {
+				continue;
+			}
+			if (captors[i]->GetVisible()) {
+				check = false;
+				break;
+			}
+		}
+
+		return check;
+	}
+
+	void Helicopter::SetCaptors(SceneNode** c) {
+		this->captors = c;
+	}
+
+	SceneNode** Helicopter::GetCaptors() {
+		return captors;
 	}
 
 

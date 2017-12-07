@@ -12,10 +12,10 @@ uniform sampler2D texture_map;
 
 // Material attributes (constants)
 vec4 ambient_color = vec4(0.1, 0.1, 0.1, 1.0);
-vec4 diffuse_color = vec4(0.5, 0.5, 0.5, 1.0);
+vec4 diffuse_color = vec4(0.9, 0.9, 0.9, 1.0);
 vec4 specular_color = vec4(0.8, 0.5, 0.9, 1.0);
-vec4 hemispherical = vec4(0.2,0.2,0.3, 1.0); 
-float phong_exponent = 128.0;
+vec4 hemispherical = vec4(0.01,0.01,0.01, 1.0); 
+float phong_exponent = 32.0;
 float ambient_amount = 0.1;
 
 
@@ -54,6 +54,6 @@ void main()
 
     // Use texture in determining fragment colour
     //gl_FragColor = pixel;
-    //gl_FragColor = (ambient_amount + lambertian_amount) * pixel + specular_amount * specular_color;
-    gl_FragColor = pixel +  hemispherical * (lambertian_amount + specular_color);
+    gl_FragColor = (ambient_amount + lambertian_amount) * pixel + specular_amount * specular_color;
+    //gl_FragColor = pixel +  hemispherical * (lambertian_amount + specular_color);
 }

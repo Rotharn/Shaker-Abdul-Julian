@@ -47,20 +47,30 @@ namespace game {
 
 			void Update(GLFWwindow*);
 
+			glm::vec2 CursorMovement();
+
 			void CreateMissileInstance(std::string, std::string, std::string);
+			void CreateBulletInstance(std::string, std::string, std::string);
 			void CreateEnemyMissile(std::string entity_name, std::string object_name, std::string material_name, Enemy* enemy);
 
 			void checkForCollisions(GLFWwindow* window, bool laser);
 
 			void PrintVec3(glm::vec3);
 
-			void SetupHelicopter();
+			// 0 = player, else it's the enemyHeli's index number
+			void SetupHelicopter(int heliNumber, Enemy** enemy);
+			void setupTank(int tankNumber, Enemy** enemy, glm::vec3 position);
 			void SetupHelicopterOld();
 			void SetupWorld();
 			void SetupEnemies();
-			void SetupHostage(std::string name);
+			void SpawnRandomHostage();
+			void SetupHostage(std::string name, SceneNode** captors, glm::vec3);
 			bool PointBoxCollision(glm::vec3 point, glm::vec3* box);
+			GLFWcursor* CreateBlankCursor();
 			glm::vec3* LinePlaneCollision(glm::vec3 planeVector, glm::vec3 planePoint, glm::vec3 lineVector, glm::vec3 linePoint);
+
+			void SpawnTank(glm::vec3);
+			void SpawnEnemyHeli(glm::vec3);
 
         protected:
             // GLFW window
@@ -76,11 +86,22 @@ namespace game {
 			SceneNode* cameraNode;
             Camera camera_;
 
+			int worldXmin;
+			int worldXmax;
+			int worldZmin;
+			int worldZmax;
+			int ticker;
             // Flag to turn animation on/off
             bool animating_;
 
 			glm::vec3 ship_velocity = glm::vec3(0.0, 0.0, 0.0);
 			glm::vec3 ship_rotation = glm::vec3(0.0, 0.0, 0.0);
+
+			glm::vec2 playerMouse = glm::vec2(0.0, 0.0);
+			
+			void HeliBuildingCollision(SceneNode*, glm::vec3);
+
+			void MissileBuidlingCollision(SceneNode*, SceneNode*, glm::vec3);
 
 			SceneNode* lazerref;
 			std::deque<SceneNode*> missiles;
@@ -91,7 +112,7 @@ namespace game {
 			std::vector<SceneNode *> collidables;
 			std::vector<Enemy*> enemies;
 			std::vector<SceneNode*> enemymissiles;
-			std::vector<glm::vec3> spawnPoints;
+			std::vector<glm::vec3*> spawnPoints;
 			std::vector<SceneNode *> buildings;
 
 			bool input_up, input_down, input_left, input_right, input_s, input_x, input_a, input_z, input_e, input_q,
@@ -109,6 +130,15 @@ namespace game {
 			SceneNode* rotor1;
 			SceneNode* rotor2;
 			SceneNode* rotor3;
+
+			std::vector<SceneNode*> explosionSpheres;
+			void UpdateExplosions(float);
+
+			float missileFireRate;
+			float missileTimer;
+
+			std::vector<SceneNode*> explodingMissiles;
+
 
 			SceneNode* test;
 
@@ -140,8 +170,13 @@ namespace game {
 			SceneNode *CreateInstance(std::string entity_name, std::string object_name, std::string material_name, std::string parent_name);
 			SceneNode *CreateTexturedInstance(std::string entity_name, std::string object_name, std::string material_name, std::string texture_name);
 			SceneNode *CreateTexturedInstance(std::string entity_name, std::string object_name, std::string material_name, std::string parent_name, std::string texture_name);
+			SceneNode* CreateExplosionSphere(glm::vec3);
 			Helicopter* CreateHeliInstance(std::string entity_name, std::string object_name, std::string material_name, std::string parent_name);
 			Helicopter* CreateTexturedHeliInstance(std::string entity_name, std::string object_name, std::string material_name, std::string parent_name, std::string texture_name);
+			Enemy* CreateTexturedEnemyHeliInstance(std::string entity_name, std::string object_name, std::string material_name, std::string parent_name, std::string texture_name);
+			Enemy* CreateTexturedEnmeyTank(std::string entity_name, std::string object_name, std::string material_name, std::string parent_name, std::string texture_name);
+
+
 
     }; // class Game
 

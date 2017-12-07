@@ -5,10 +5,11 @@
 //#include "helicopter.h"
 
 namespace game {
+
 	class Enemy : public SceneNode {
 
 	public:
-		Enemy(const std::string name, const Resource *geometry, const Resource *material, SceneNode* player, ResourceManager* resman);
+		Enemy(int enemyType, const std::string name, const Resource *geometry, const Resource *material, Resource* texture, SceneNode* player, ResourceManager* resman);
 		~Enemy();
 
 		class EnemyException : public std::exception
@@ -30,16 +31,22 @@ namespace game {
 		void Yaw(float angle);
 		void Roll(float angle);
 		bool Shoot();
+		glm::quat* GetShotOrientation();
+		glm::vec3 GetShotDirection();
+		void SetParentEnemy(Enemy*);
+		Enemy* GetParentEnemy();
+		int GetType();
+		void SetType(int t);
 		void SetAgro(bool agro);
 
 
 
 	protected:
-		
+
 		void Update();
-		
+
 		SceneNode* CreateMissileInstance(std::string entity_name, std::string object_name, std::string material_name);
-		
+
 		enum enemy_type {
 			STATIONARY = 0,
 			MOVING = 1,
@@ -51,7 +58,14 @@ namespace game {
 		float shoottime;
 		float incrementingFloat;
 		bool hasShot;
+		int shotCount;
 		bool agro;
+
+		Enemy* parentEnemy;
+
+		glm::quat shotOrientation;
+		glm::vec3 shotDirection;
+
 		SceneNode* player;
 		//glm::vec3 playerpos;
 

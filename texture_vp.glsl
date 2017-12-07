@@ -20,7 +20,7 @@ out vec2 uv_interp;
 out vec3 light_pos;
 
 // Material attributes (constants)
-uniform vec3 light_position = vec3(-0.5, -0.5, 1.5);
+uniform vec3 light_position = vec3(300);
 
 
 void main()

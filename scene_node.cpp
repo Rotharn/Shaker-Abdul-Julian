@@ -111,6 +111,11 @@ void SceneNode::SetVisible(bool visible) {
 	}
 }
 
+bool SceneNode::GetVisible() {
+	return visible_;
+}
+
+
 void SceneNode::SetParticle(bool particle) {
 
 	particle_ = particle;
@@ -196,6 +201,7 @@ glm::mat4 SceneNode::Draw(Camera *camera, glm::mat4 parent_transf){
 				glBlendEquationSeparate(GL_FUNC_ADD, GL_MAX);
 				glDepthFunc(GL_ALWAYS);
 			}
+
 			else {
 				glEnable(GL_DEPTH_TEST);
 				glDisable(GL_BLEND);
@@ -210,6 +216,10 @@ glm::mat4 SceneNode::Draw(Camera *camera, glm::mat4 parent_transf){
 
 			// Set globals for camera
 			camera->SetupShader(material_);
+
+			for (int i = 0; i < shader_att_.size(); i++) {
+				shader_att_[i].SetupShader(material_);
+			}
 
 			// Set world matrix and other shader input variables
 			glm::mat4 transf = SetupShader(material_, parent_transf);
@@ -336,6 +346,31 @@ std::vector<SceneNode *>::const_iterator SceneNode::children_begin() const {
 std::vector<SceneNode *>::const_iterator SceneNode::children_end() const {
 
     return children_.end();
+}
+
+void SceneNode::AddShaderAttribute(std::string name, DataType type, int size, GLfloat *data) {
+
+	ShaderAttribute att(name, type, size, data);
+	shader_att_.push_back(att);
+}
+
+
+void SceneNode::RemoveShaderAttribute(std::string name) {
+
+	for (std::vector<ShaderAttribute>::iterator it = shader_att_.begin();
+	it != shader_att_.end();
+		it++) {
+		if (it->GetName() == name) {
+			shader_att_.erase(it);
+			break;
+		}
+	}
+}
+
+
+void SceneNode::ClearShaderAttributes(void) {
+
+	shader_att_.clear();
 }
 
 } // namespace game;

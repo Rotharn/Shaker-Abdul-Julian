@@ -26,6 +26,7 @@ namespace game {
             // Add a resource that was already loaded and allocated to memory
             void AddResource(ResourceType type, const std::string name, GLuint resource, GLsizei size);
             void AddResource(ResourceType type, const std::string name, GLuint array_buffer, GLuint element_array_buffer, GLsizei size);
+			void AddResource(ResourceType type, const std::string name, GLfloat *data, GLsizei size);
             // Load a resource from a file, according to the specified type
             void LoadResource(ResourceType type, const std::string name, const char *filename);
 			void LoadTexture(const std::string name, const char *filename);
@@ -39,10 +40,14 @@ namespace game {
 			void CreateCylinder(std::string object_name, float height = 0.0, float circle_radius = 0.2, int num_line_samples = 3, int num_circle_samples = 30, int startingPoint = -1);
 			void CreateCube(std::string object_name);
 			void CreateMissileParticles(std::string object_name, int num_particles = 200);
+			void CreateParticle(std::string object_name);
+			void CreateControlPoints(std::string object_name, int num_control_points);
+			void CreateTorusParticles(std::string object_name, int num_particles = 20000, float loop_radius = 0.6, float circle_radius = 0.2);
 
         private:
             // List storing all resources
             std::vector<Resource*> resource_; 
+			GLfloat *control_point;
  
             // Methods to load specific types of resources
             // Load shaders programs
