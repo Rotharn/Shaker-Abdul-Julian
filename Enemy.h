@@ -38,7 +38,7 @@ namespace game {
 		int GetType();
 		void SetType(int t);
 		void SetAgro(bool agro);
-
+		float LoseHealth(float dmg);
 
 
 	protected:
@@ -54,6 +54,7 @@ namespace game {
 		};
 		int type;
 		float damage;
+		float health;
 		float time;
 		float shoottime;
 		float incrementingFloat;

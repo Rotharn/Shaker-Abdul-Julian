@@ -1607,15 +1607,18 @@ namespace game {
 					}
 				}
 
-				if (test < 0.0 && test > -1.0)
-					enemies[j]->SetVisible(false);
+				if (test < 0.0 && test > -1.0) {
+					if (enemies[j]->LoseHealth(2.0f) <= 0.0f)
+						enemies[j]->SetVisible(false);
+				}
 
 			}
 			else {
 				for (int z = 0; z < missiles.size(); z++) {
 
 					if (glm::length(missiles[z]->GetPosition() - enemies[j]->GetPosition()) <= 2.0) {
-						enemies[j]->SetVisible(false);
+						if (enemies[j]->LoseHealth(1.0f) <= 0.0f)
+							enemies[j]->SetVisible(false);
 					}
 
 
@@ -1630,7 +1633,8 @@ namespace game {
 
 
 							if (glm::length(childmissiles[n][k]->GetPosition() - enemies[j]->GetPosition()) <= 2.0) {
-								enemies[j]->SetVisible(false);
+								if (enemies[j]->LoseHealth(1.0f) <= 0.0f)
+									enemies[j]->SetVisible(false);
 							}
 							if (childmissiles[n].size() > 5) {
 								childmissiles[n][k]->SetVisible(false);
@@ -1642,7 +1646,8 @@ namespace game {
 
 				for (int h = 0; h < explosionSpheres.size(); h++) {
 					if (glm::length(explosionSpheres[h]->GetPosition() - enemies[j]->GetPosition()) < (1.0f + glm::length(explosionSpheres[h]->GetScale().y))) {
-						enemies[j]->SetVisible(false);
+						if (enemies[j]->LoseHealth(5.0f) <= 0.0f)
+							enemies[j]->SetVisible(false);
 					}
 				}
 
@@ -1798,8 +1803,8 @@ namespace game {
 		scene_.GetNode("Root")->AddChild(bullet, true);
 		float off = 0.0;
 
-		float sprayX = (float)((rand() % 1000) - 500) / 20000.0f * 0.0;
-		float sprayY = (float)((rand() % 1000) - 500) / 20000.0f * 0.0;
+		float sprayX = (float)((rand() % 1000) - 500) / 20000.0f;
+		float sprayY = (float)((rand() % 1000) - 500) / 20000.0f;
 
 
 		bullet->direction = glm::normalize(camera_.GetForward() + sprayY * camera_.GetUp() + sprayX * camera_.GetSide());

@@ -11,6 +11,13 @@ namespace game {
 		this->damage = 1.0;
 		shoottime = 0.0;
 
+		switch (enemyType) {
+			case 0: health = 10.0; break;
+			case 1: health = 5.0; break;
+			case 2: health = 3.0; break;
+			default: health = 5.0; break;
+		}
+
 		this->time = glfwGetTime();
 		this->player = player;
 		this->enemyResMan = resman;
@@ -212,6 +219,11 @@ namespace game {
 
 		glm::quat rotation = glm::angleAxis(angle, GetForward());
 		orientation_ = rotation * orientation_;
+	}
+
+	float Enemy::LoseHealth(float dmg) {
+		health -= dmg;
+		return health;
 	}
 
 }
